@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OET Speaking フラッシュカード</title>
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --card-bg: #ffffff;
+    --primary: #0d7377;
+    --primary-dark: #0a5c5f;
+    --accent: #f59e0b;
+    --text: #1e293b;
+    --text-sub: #64748b;
+    --green: #16a34a;
+    --red: #dc2626;
+    --radius: 16px;
+    --shadow: 0 4px 20px rgba(13,115,119,0.12);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: 1.5rem;
+    color: var(--primary);
+  }
+  header p {
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    margin-top: 4px;
+  }
+  .controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 16px;
+    max-width: 640px;
+  }
+  select, .btn {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: var(--card-bg);
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .btn:hover, select:hover { border-color: var(--primary); }
+  .btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .progress-wrap {
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 12px;
+  }
+  .progress-bar {
+    height: 6px;
+    background: #dbe4ee;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--primary);
+    width: 0%;
+    transition: width 0.3s;
+  }
+  .progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-sub);
+    margin-top: 4px;
+  }
+  .card-area {
+    width: 100%;
+    max-width: 640px;
+    perspective: 1200px;
+  }
+  .card {
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 28px;
+    text-align: center;
+  }
+  .card-back { transform: rotateY(180deg); }
+  .category-tag {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-size: 0.72rem;
+    background: #e0f2f1;
+    color: var(--primary-dark);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .face-label {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 0.72rem;
+    color: var(--text-sub);
+    letter-spacing: 0.08em;
+  }
+  .jp-text {
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.7;
+  }
+  .en-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--primary-dark);
+  }
+  .note {
+    margin-top: 18px;
+    font-size: 0.82rem;
+    color: var(--text-sub);
+    line-height: 1.6;
+    border-top: 1px dashed #cbd5e1;
+    padding-top: 12px;
+  }
+  .hint {
+    margin-top: 20px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+  .speak-btn {
+    margin-top: 16px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .speak-btn:hover { opacity: 0.85; }
+  .nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .nav .btn { font-size: 0.9rem; padding: 10px 20px; }
+  .btn-know { border-color: var(--green); color: var(--green); }
+  .btn-know:hover { background: var(--green); color: #fff; }
+  .btn-dontknow { border-color: var(--red); color: var(--red); }
+  .btn-dontknow:hover { background: var(--red); color: #fff; }
+  .stats {
+    margin-top: 14px;
+    font-size: 0.8rem;
+    color: var(--text-sub);
+  }
+  .stats span.known { color: var(--green); font-weight: 600; }
+  .stats span.review { color: var(--red); font-weight: 600; }
+  .done-msg {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .done-msg h2 { color: var(--primary); margin-bottom: 12px; }
+  .done-msg p { color: var(--text-sub); margin-bottom: 20px; line-height: 1.7; }
+  kbd {
+    background: #e2e8f0;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.72rem;
+    font-family: inherit;
+  }
+  @media (max-width: 480px) {
+    .jp-text { font-size: 1.1rem; }
+    .en-text { font-size: 1.05rem; }
+    .card { min-height: 360px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🩺 OET Speaking フラッシュカード <span style="font-size:0.8rem;color:var(--text-sub)">for Dr Nohara</span></h1>
+  <p>和文を見て英語で言ってみる → カードをタップして答え合わせ</p>
+</header>
+
+<div class="controls">
+  <select id="categorySelect" aria-label="カテゴリ選択"></select>
+  <button class="btn" id="shuffleBtn">🔀 シャッフル</button>
+  <button class="btn" id="reviewModeBtn">⭐ 要復習のみ</button>
+  <button class="btn" id="resetBtn">↺ 進捗リセット</button>
+  <select id="voiceSelect" aria-label="音声選択" title="読み上げ音声"></select>
+  <select id="rateSelect" aria-label="読み上げ速度" title="読み上げ速度">
+    <option value="0.7">🐢 ゆっくり</option>
+    <option value="0.9" selected>標準</option>
+    <option value="1.0">ネイティブ速度</option>
+  </select>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text">
+    <span id="cardCounter">0 / 0</span>
+    <span id="statsText"></span>
+  </div>
+</div>
+
+<div class="card-area" id="cardArea"></div>
+
+<div class="nav">
+  <button class="btn" id="prevBtn">← 前へ</button>
+  <button class="btn btn-dontknow" id="dontKnowBtn">✗ 要復習</button>
+  <button class="btn btn-know" id="knowBtn">✓ 言えた</button>
+  <button class="btn" id="nextBtn">次へ →</button>
+</div>
+<p class="stats" style="margin-top:16px">
+  キー操作: <kbd>Space</kbd> めくる / <kbd>←</kbd><kbd>→</kbd> 移動 / <kbd>1</kbd> 要復習 / <kbd>2</kbd> 言えた / <kbd>S</kbd> 読み上げ
+</p>
+
+<script>
+const CARDS = [
+  // ============ 1. 導入・挨拶 ============
+  { cat: "導入・挨拶", jp: "こんにちは、本日診察を担当いたします、医師のノハラと申します。", en: "Hello, my name is Dr Nohara. I'm the doctor looking after you today.", note: "自己紹介はロールプレイ冒頭の定型。Dr + 姓で名乗り、職種を添える。" },
+  { cat: "導入・挨拶", jp: "お名前を確認させていただいてもよろしいですか？", en: "Could I just confirm your name, please?", note: "Could I just... で柔らかい依頼に。" },
+  { cat: "導入・挨拶", jp: "今日はどうなさいましたか？", en: "What brings you in today? / How can I help you today?", note: "オープニングの定番質問。" },
+  { cat: "導入・挨拶", jp: "今日の体調はいかがですか？", en: "How are you feeling today?", note: "" },
+  { cat: "導入・挨拶", jp: "お話しする前に、少しお時間をいただいてもよろしいでしょうか？", en: "Before we start, would you mind if I take a few minutes of your time?", note: "Would you mind if... は丁寧な許可の求め方。" },
+  { cat: "導入・挨拶", jp: "おかけになって、楽になさってください。", en: "Please take a seat and make yourself comfortable.", note: "" },
+
+  // ============ 2. 共感・安心 ============
+  { cat: "共感・安心", jp: "それはおつらいでしょうね。", en: "That must be really difficult for you.", note: "must be で相手の気持ちを推し量る共感表現。" },
+  { cat: "共感・安心", jp: "ご心配なお気持ち、よくわかります。", en: "I completely understand your concern.", note: "I understand how you feel. も可。" },
+  { cat: "共感・安心", jp: "ご不安に感じられるのは当然のことです。", en: "It's completely understandable that you feel anxious about this.", note: "感情の正当化（validation）はOET高評価ポイント。" },
+  { cat: "共感・安心", jp: "どうかご安心ください。私たちが最善のケアをいたします。", en: "Please rest assured that we will provide you with the best possible care.", note: "rest assured = 安心する（フォーマル）。" },
+  { cat: "共感・安心", jp: "心配なさらないでください。これはよくあることです。", en: "Please don't worry. This is quite common.", note: "" },
+  { cat: "共感・安心", jp: "大変な思いをされましたね。", en: "You've been through a lot, haven't you?", note: "付加疑問で寄り添いを示す。" },
+  { cat: "共感・安心", jp: "おっしゃりたいこと、よくわかります。", en: "I can see where you're coming from.", note: "相手の立場への理解を示すイディオム。" },
+  { cat: "共感・安心", jp: "何かご心配なことがあれば、いつでもおっしゃってください。", en: "If you have any concerns, please don't hesitate to let me know.", note: "don't hesitate to... = 遠慮なく〜する。" },
+
+  // ============ 3. 情報収集 ============
+  { cat: "情報収集", jp: "その痛みについて、もう少し詳しく教えていただけますか？", en: "Could you tell me a bit more about the pain?", note: "" },
+  { cat: "情報収集", jp: "症状はいつ頃から始まりましたか？", en: "When did the symptoms first start?", note: "" },
+  { cat: "情報収集", jp: "痛みを10段階で表すと、どのくらいですか？", en: "On a scale of zero to ten, how would you rate your pain?", note: "ペインスケールの定番表現。" },
+  { cat: "情報収集", jp: "どのような痛みですか？ズキズキしますか、それとも刺すような痛みですか？", en: "What kind of pain is it? Is it throbbing or stabbing?", note: "throbbing=ズキズキ, stabbing=刺すような, dull=鈍い, burning=焼けるような。" },
+  { cat: "情報収集", jp: "現在、何かお薬を服用されていますか？", en: "Are you currently taking any medications?", note: "" },
+  { cat: "情報収集", jp: "何かアレルギーはお持ちですか？", en: "Do you have any allergies?", note: "" },
+  { cat: "情報収集", jp: "ご家族に同じような病気の方はいらっしゃいますか？", en: "Does anyone in your family have a similar condition?", note: "家族歴 = family history。" },
+  { cat: "情報収集", jp: "他に気になる症状はありますか？", en: "Are there any other symptoms that concern you?", note: "" },
+  { cat: "情報収集", jp: "普段の生活で、食事や運動の習慣について教えていただけますか？", en: "Could you tell me about your diet and exercise habits?", note: "生活習慣の聞き取り。" },
+  { cat: "情報収集", jp: "立ち入ったことを伺いますが、飲酒や喫煙はされますか？", en: "I need to ask you a few personal questions. Do you drink or smoke?", note: "前置きを入れるのがマナー。" },
+
+  // ============ 4. 説明 ============
+  { cat: "説明", jp: "検査の結果について、ご説明させていただきます。", en: "Let me explain the results of your test.", note: "I'd like to explain... でも可。" },
+  { cat: "説明", jp: "簡単に言いますと、血圧が通常より高い状態です。", en: "To put it simply, your blood pressure is higher than normal.", note: "to put it simply = 専門用語を避ける合図。" },
+  { cat: "説明", jp: "この薬は1日2回、食後に服用してください。", en: "Please take this medication twice a day after meals.", note: "" },
+  { cat: "説明", jp: "この処置には数分かかりますが、痛みはほとんどありません。", en: "This procedure will only take a few minutes, and you'll feel little to no pain.", note: "" },
+  { cat: "説明", jp: "副作用として、眠気を感じることがあります。", en: "As a side effect, you may feel drowsy.", note: "drowsy = 眠気がある。" },
+  { cat: "説明", jp: "傷口を清潔に保ち、濡らさないようにしてください。", en: "Please keep the wound clean and dry.", note: "" },
+  { cat: "説明", jp: "数日間は激しい運動を避けていただく必要があります。", en: "You'll need to avoid strenuous exercise for a few days.", note: "strenuous = 激しい・骨の折れる。" },
+  { cat: "説明", jp: "これから診察させていただいてもよろしいですか？お腹を拝見しますね。", en: "Would it be all right if I examine you now? I'd like to have a look at your abdomen.", note: "身体診察の前は必ず許可を取る（consent）。OETの重要評価項目。" },
+  { cat: "説明", jp: "診察の結果、胃炎の可能性が高いと考えられます。", en: "Based on the examination, it's most likely that you have gastritis.", note: "診断は it's likely that... / it appears that... で断定を和らげる。" },
+  { cat: "説明", jp: "炎症を抑えるお薬を処方いたしますね。", en: "I'm going to prescribe you some medication to reduce the inflammation.", note: "prescribe = 処方する。" },
+  { cat: "説明", jp: "念のため、血液検査とレントゲンを受けていただきたいと思います。", en: "Just to be on the safe side, I'd like you to have a blood test and an X-ray.", note: "just to be on the safe side = 念のため。検査オーダーの定型。" },
+  { cat: "説明", jp: "より詳しい検査のため、専門医をご紹介します。", en: "I'm going to refer you to a specialist for further tests.", note: "refer A to B = AをBに紹介する。referral = 紹介状。" },
+  { cat: "説明", jp: "経過を見るために、来週もう一度お越しいただきたいのですが。", en: "I'd like you to come back next week so we can monitor your progress.", note: "" },
+  { cat: "説明", jp: "万が一症状が悪化した場合は、すぐにご連絡ください。", en: "If your symptoms get worse, please contact us immediately.", note: "" },
+
+  // ============ 5. 確認・理解度チェック ============
+  { cat: "確認・理解", jp: "ここまでで、何かご質問はありますか？", en: "Do you have any questions so far?", note: "説明の区切りごとに挟むと高評価。" },
+  { cat: "確認・理解", jp: "私の説明でわかりにくいところはありませんでしたか？", en: "Is there anything I've said that wasn't clear?", note: "" },
+  { cat: "確認・理解", jp: "念のため、今お伝えした内容をご自身の言葉で確認させていただけますか？", en: "Just to make sure, could you repeat back to me what we've discussed in your own words?", note: "teach-back法。患者理解の確認テクニック。" },
+  { cat: "確認・理解", jp: "つまり、夜になると痛みが強くなるということですね？", en: "So, what you're saying is that the pain gets worse at night, is that right?", note: "パラフレーズで聞き取り内容を確認。" },
+  { cat: "確認・理解", jp: "恐れ入りますが、もう一度おっしゃっていただけますか？", en: "I'm sorry, could you say that again, please?", note: "聞き返しも減点ではなく自然なやり取り。" },
+  { cat: "確認・理解", jp: "私の理解が正しければ、薬を飲み忘れることが多いのですね。", en: "If I understand correctly, you often forget to take your medication.", note: "" },
+
+  // ============ 6. 説得・アドバイス ============
+  { cat: "説得・アドバイス", jp: "禁煙されることを強くお勧めします。", en: "I strongly recommend that you quit smoking.", note: "recommend that you (should) + 動詞原形。" },
+  { cat: "説得・アドバイス", jp: "塩分を控えめにしていただくと、血圧の改善が期待できます。", en: "Cutting down on salt would help improve your blood pressure.", note: "cut down on = 〜を減らす。" },
+  { cat: "説得・アドバイス", jp: "お気持ちはわかりますが、この治療を受けることがご自身のためになると思います。", en: "I understand how you feel, but I believe this treatment would be in your best interest.", note: "in your best interest = あなたのためになる。" },
+  { cat: "説得・アドバイス", jp: "すぐには難しいかもしれませんが、少しずつ始めてみませんか？", en: "It might be hard at first, but why don't we start with small steps?", note: "why don't we...? で押しつけない提案。" },
+  { cat: "説得・アドバイス", jp: "治療を受けない場合、症状が悪化するリスクがあります。", en: "If you don't receive the treatment, there's a risk that your condition could get worse.", note: "リスク説明は could で断定を避ける。" },
+  { cat: "説得・アドバイス", jp: "ご家族に相談してから決めていただいても構いませんよ。", en: "You're welcome to discuss it with your family before making a decision.", note: "患者の自己決定権の尊重。" },
+  { cat: "説得・アドバイス", jp: "一緒に実行しやすい計画を立てていきましょう。", en: "Let's work together to come up with a plan that works for you.", note: "協働的な姿勢を示すフレーズ。" },
+
+  // ============ 7. 悪い知らせの伝え方 ============
+  { cat: "悪い知らせ", jp: "今日は検査結果について、大切なお話があります。", en: "I'm afraid I have some important news to discuss with you today regarding your test results.", note: "warning shot（前置き）。いきなり本題に入らず心の準備をしてもらう。" },
+  { cat: "悪い知らせ", jp: "お話しする前に、ご自身の病状についてどこまでご存知か教えていただけますか？", en: "Before we go on, could you tell me what you already understand about your condition?", note: "SPIKESのPerception。患者の認識を先に確認する。" },
+  { cat: "悪い知らせ", jp: "結果について、どこまで詳しくお知りになりたいですか？", en: "How much detail would you like me to go into about the results?", note: "SPIKESのInvitation。知りたい範囲は患者に決めてもらう。" },
+  { cat: "悪い知らせ", jp: "残念ながら、検査の結果は私たちが期待していたものではありませんでした。", en: "I'm afraid the results were not what we had hoped for.", note: "I'm afraid... = 残念ながら。悪い知らせの定番の切り出し。" },
+  { cat: "悪い知らせ", jp: "大変申し上げにくいのですが、腫瘍が見つかりました。", en: "I'm very sorry to have to tell you this, but we have found a tumour.", note: "率直に、しかし思いやりを持って伝える。婉曲にしすぎない。" },
+  { cat: "悪い知らせ", jp: "少しお時間を取りましょう。今のお気持ちをお聞かせいただけますか？", en: "Let's take a moment. Would you like to tell me how you're feeling right now?", note: "沈黙を恐れず、感情への対応（Emotions）を優先する。" },
+  { cat: "悪い知らせ", jp: "一度にすべてを受け止めるのは難しいと思います。", en: "I know this is a lot to take in.", note: "take in = 理解する・受け止める。" },
+  { cat: "悪い知らせ", jp: "どんな時も、私たちが一歩一歩しっかりサポートしていきます。", en: "Whatever happens, we will be here to support you every step of the way.", note: "every step of the way = 終始ずっと。希望と継続的支援を示す。" },
+  { cat: "悪い知らせ", jp: "ご希望であれば、ご家族ご同席のもとで改めてご説明することもできます。", en: "If you'd like, we can go through this again together with your family.", note: "go through = 一つずつ説明する。" },
+
+  // ============ 8. 治療拒否への対応 ============
+  { cat: "治療拒否への対応", jp: "治療をためらわれている理由を教えていただけますか？", en: "Could you tell me what's making you reluctant to have the treatment?", note: "reluctant = 気が進まない。まず理由の傾聴から始める。" },
+  { cat: "治療拒否への対応", jp: "無理強いするつもりはまったくありません。最終的に決めるのはご自身です。", en: "I'm not here to pressure you at all. The final decision is entirely yours.", note: "患者の自己決定権（autonomy）の尊重を明言する。" },
+  { cat: "治療拒否への対応", jp: "ただ、決断される前に、リスクについて十分ご理解いただきたいのです。", en: "However, before you make a decision, I want to make sure you fully understand the risks involved.", note: "" },
+  { cat: "治療拒否への対応", jp: "治療をしない場合に何が起こりうるか、ご説明してもよろしいですか？", en: "May I explain what could happen if the condition is left untreated?", note: "left untreated = 治療されないまま放置されると。" },
+  { cat: "治療拒否への対応", jp: "費用がご心配でしたら、ソーシャルワーカーにご相談いただくこともできますよ。", en: "If cost is a concern, we can arrange for you to speak with a social worker.", note: "arrange for A to do = Aが〜できるよう手配する。" },
+  { cat: "治療拒否への対応", jp: "他の治療の選択肢についても、一緒に考えていきましょう。", en: "Let's explore some alternative treatment options together.", note: "explore = 検討する。代替案の提示で歩み寄る。" },
+  { cat: "治療拒否への対応", jp: "今すぐお決めいただかなくて大丈夫です。じっくり考えるお時間を取りましょう。", en: "You don't have to decide right away. Let's give you some time to think it over.", note: "think it over = じっくり考える。" },
+  { cat: "治療拒否への対応", jp: "セカンドオピニオンをお聞きになっても、まったく構いませんよ。", en: "You're more than welcome to seek a second opinion.", note: "more than welcome = 大歓迎。防衛的にならない姿勢を示す。" },
+
+  // ============ 9. 締めくくり ============
+  { cat: "締めくくり", jp: "本日お話しした内容をまとめさせていただきますね。", en: "Let me summarise what we've discussed today.", note: "クロージングの定型。要点を2〜3個復唱する。" },
+  { cat: "締めくくり", jp: "他に何かお聞きになりたいことはありますか？", en: "Is there anything else you'd like to ask?", note: "" },
+  { cat: "締めくくり", jp: "受付で次回の予約をお取りください。", en: "Please make your next appointment at the reception desk.", note: "" },
+  { cat: "締めくくり", jp: "パンフレットをお渡ししますので、ご自宅でゆっくりお読みください。", en: "I'll give you a leaflet, so please take your time to read it at home.", note: "leaflet / brochure = パンフレット。" },
+  { cat: "締めくくり", jp: "お大事になさってください。早く良くなりますように。", en: "Please take care. I hope you feel better soon.", note: "" },
+  { cat: "締めくくり", jp: "本日はお話しいただき、ありがとうございました。", en: "Thank you for talking with me today.", note: "" },
+];
+
+const LS_KEY = "oet_flashcards_v1";
+let state = {
+  category: "all",
+  reviewMode: false,
+  order: [],
+  index: 0,
+  flipped: false,
+  known: {},   // cardKey -> true
+  review: {},  // cardKey -> true
+};
+
+function cardKey(c) { return c.cat + "::" + c.jp; }
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_KEY));
+    if (saved) { state.known = saved.known || {}; state.review = saved.review || {}; }
+  } catch (e) {}
+}
+function saveState() {
+  localStorage.setItem(LS_KEY, JSON.stringify({ known: state.known, review: state.review }));
+}
+
+function filteredCards() {
+  let cards = CARDS.map((c, i) => ({ ...c, _i: i }));
+  if (state.category !== "all") cards = cards.filter(c => c.cat === state.category);
+  if (state.reviewMode) cards = cards.filter(c => state.review[cardKey(c)]);
+  return cards;
+}
+
+function rebuildOrder(shuffle = false) {
+  const cards = filteredCards();
+  state.order = cards.map(c => c._i);
+  if (shuffle) {
+    for (let i = state.order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [state.order[i], state.order[j]] = [state.order[j], state.order[i]];
+    }
+  }
+  state.index = 0;
+  state.flipped = false;
+}
+
+function currentCard() {
+  if (state.order.length === 0) return null;
+  return CARDS[state.order[state.index]];
+}
+
+// --- 音声管理: 自然な音声を優先的に選ぶ ---
+let voices = [];
+let selectedVoiceURI = localStorage.getItem("oet_voice") || "";
+
+// 自然さの目安スコア。Google音声・macOSの拡張(Enhanced)/プレミアム音声を上位に。
+function voiceScore(v) {
+  let s = 0;
+  const n = v.name.toLowerCase();
+  if (!v.lang.startsWith("en")) return -100;
+  if (n.includes("premium")) s += 50;
+  if (n.includes("enhanced") || n.includes("拡張")) s += 40;
+  if (n.includes("google")) s += 35;
+  if (n.includes("natural") || n.includes("online")) s += 30;
+  if (/samantha|serena|stephanie|daniel|karen|moira|kate|oliver|ava|zoe|allison/.test(n)) s += 10;
+  if (v.lang === "en-GB") s += 8;        // OETは英豪系の英語が中心
+  else if (v.lang === "en-AU") s += 6;
+  else if (v.lang === "en-US") s += 4;
+  if (n.includes("compact") || n.includes("eloquence")) s -= 50; // 機械的な軽量音声を除外
+  return s;
+}
+
+function populateVoices() {
+  const sel = document.getElementById("voiceSelect");
+  if (!window.speechSynthesis) { sel.innerHTML = "<option>音声非対応</option>"; return; }
+  voices = speechSynthesis.getVoices()
+    .filter(v => v.lang.startsWith("en"))
+    .sort((a, b) => voiceScore(b) - voiceScore(a));
+  if (!voices.length) { sel.innerHTML = "<option>音声なし</option>"; return; }
+  sel.innerHTML = voices.map(v =>
+    `<option value="${v.voiceURI}">🔊 ${v.name} (${v.lang})</option>`).join("");
+  // 保存済みの選択があればそれを、なければ最高スコアの音声を選ぶ
+  if (selectedVoiceURI && voices.some(v => v.voiceURI === selectedVoiceURI)) {
+    sel.value = selectedVoiceURI;
+  } else {
+    selectedVoiceURI = voices[0].voiceURI;
+    sel.value = selectedVoiceURI;
+  }
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices.find(x => x.voiceURI === selectedVoiceURI);
+  if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-GB"; }
+  u.rate = parseFloat(document.getElementById("rateSelect").value);
+  u.pitch = 1.0;
+  speechSynthesis.speak(u);
+}
+
+function render() {
+  const area = document.getElementById("cardArea");
+  const card = currentCard();
+  const total = state.order.length;
+
+  document.getElementById("cardCounter").textContent = total ? `${state.index + 1} / ${total}` : "0 / 0";
+  document.getElementById("progressFill").style.width = total ? `${((state.index + 1) / total) * 100}%` : "0%";
+
+  const knownCount = Object.keys(state.known).length;
+  const reviewCount = Object.keys(state.review).length;
+  document.getElementById("statsText").innerHTML =
+    `<span class="known">✓ ${knownCount}</span>　<span class="review">⭐ 要復習 ${reviewCount}</span>`;
+
+  if (!card) {
+    area.innerHTML = `<div class="done-msg">
+      <h2>カードがありません</h2>
+      <p>${state.reviewMode ? "要復習のカードはありません。よく頑張りました！🎉" : "カテゴリを変更してください。"}</p>
+    </div>`;
+    return;
+  }
+
+  const en = card.en.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const jp = card.jp.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  area.innerHTML = `
+    <div class="card ${state.flipped ? "flipped" : ""}" id="theCard">
+      <div class="card-face card-front">
+        <span class="category-tag">${card.cat}</span>
+        <span class="face-label">日本語 → 英語で言ってみよう</span>
+        <p class="jp-text">${jp}</p>
+        <p class="hint">クリック or Space で答えを表示</p>
+      </div>
+      <div class="card-face card-back">
+        <span class="category-tag">${card.cat}</span>
+        <span class="face-label">ANSWER</span>
+        <p class="en-text">${en}</p>
+        ${card.note ? `<p class="note">💡 ${card.note}</p>` : ""}
+        <button class="speak-btn" id="speakBtn">🔊 発音を聞く</button>
+      </div>
+    </div>`;
+
+  document.getElementById("theCard").addEventListener("click", (e) => {
+    if (e.target.id === "speakBtn") return;
+    state.flipped = !state.flipped;
+    document.getElementById("theCard").classList.toggle("flipped", state.flipped);
+  });
+  const sb = document.getElementById("speakBtn");
+  if (sb) sb.addEventListener("click", (e) => { e.stopPropagation(); speak(card.en); });
+}
+
+function next() {
+  if (state.index < state.order.length - 1) { state.index++; state.flipped = false; render(); }
+}
+function prev() {
+  if (state.index > 0) { state.index--; state.flipped = false; render(); }
+}
+function markKnown() {
+  const c = currentCard(); if (!c) return;
+  const k = cardKey(c);
+  state.known[k] = true;
+  delete state.review[k];
+  saveState();
+  next(); render();
+}
+function markReview() {
+  const c = currentCard(); if (!c) return;
+  const k = cardKey(c);
+  state.review[k] = true;
+  delete state.known[k];
+  saveState();
+  next(); render();
+}
+
+// --- setup ---
+loadState();
+
+populateVoices();
+if (window.speechSynthesis && speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = populateVoices; // Chromeは非同期で音声リストが届く
+}
+document.getElementById("voiceSelect").addEventListener("change", (e) => {
+  selectedVoiceURI = e.target.value;
+  localStorage.setItem("oet_voice", selectedVoiceURI);
+  const c = currentCard();
+  if (c) speak(c.en); // 切り替え後すぐ試聴
+});
+
+const select = document.getElementById("categorySelect");
+const cats = [...new Set(CARDS.map(c => c.cat))];
+select.innerHTML = `<option value="all">すべてのカテゴリ (${CARDS.length})</option>` +
+  cats.map(c => `<option value="${c}">${c} (${CARDS.filter(x => x.cat === c).length})</option>`).join("");
+
+select.addEventListener("change", () => { state.category = select.value; rebuildOrder(); render(); });
+document.getElementById("shuffleBtn").addEventListener("click", () => { rebuildOrder(true); render(); });
+document.getElementById("reviewModeBtn").addEventListener("click", (e) => {
+  state.reviewMode = !state.reviewMode;
+  e.target.classList.toggle("active", state.reviewMode);
+  rebuildOrder(); render();
+});
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (confirm("学習進捗（✓・要復習）をリセットしますか？")) {
+    state.known = {}; state.review = {};
+    saveState(); render();
+  }
+});
+document.getElementById("nextBtn").addEventListener("click", next);
+document.getElementById("prevBtn").addEventListener("click", prev);
+document.getElementById("knowBtn").addEventListener("click", markKnown);
+document.getElementById("dontKnowBtn").addEventListener("click", markReview);
+
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space") { e.preventDefault(); state.flipped = !state.flipped; render(); }
+  else if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === "1") markReview();
+  else if (e.key === "2") markKnown();
+  else if (e.key.toLowerCase() === "s") { const c = currentCard(); if (c) speak(c.en); }
+});
+
+rebuildOrder();
+render();
+</script>
+</body>
+</html>
