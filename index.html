@@ -254,6 +254,22 @@
 
 <script>
 const CARDS = [
+  // ============ 0. ⭐最優先（7本診断ベース） ============
+  { cat: "⭐最優先", jp: "それでは、私たちが合意した内容をまとめますと…。そして次のステップは…です。", en: "So, to summarise what we've agreed… and the next step is…", note: "🥇優先度1・暗記必須。7本中0本で締めができていなかった。残り30秒を切ったら話の途中でも、このセリフで割り込んで締めに入る。" },
+  { cat: "⭐最優先", jp: "これらの質問をするのは、あなたに最適なアドバイスをするためです。よろしいですか？", en: "I ask these because they help me give you the best advice — is that okay?", note: "🥈優先度2・抵抗への対応。患者の「なぜそんなことを聞くの？」に理由を説明せず素通りしない（RP6の失点）。" },
+  { cat: "⭐最優先", jp: "どれほどご心配だったことか、想像するに余りあります。", en: "I can only imagine how worrying this must have been for you.", note: "🥉優先度3・共感ローテーション1/3。\"It is very normal to feel that way\"の使い回し固定化を防ぐ。" },
+  { cat: "⭐最優先", jp: "あなたと同じ状況の方の多くが、まったく同じように感じていますよ。", en: "Many people in your situation feel exactly the same way.", note: "🥉優先度3・共感ローテーション2/3。" },
+  { cat: "⭐最優先", jp: "苛立ちを感じられるのは、まったく無理もないことです。", en: "It's completely understandable that you'd feel frustrated.", note: "🥉優先度3・共感ローテーション3/3。frustrated部分はanxious/upset等に差し替え可。" },
+  { cat: "⭐最優先", jp: "ご説明する前に、いくつか質問させていただいてもよろしいですか？", en: "Before I explain, can I ask you a few questions?", note: "優先度4・病歴聴取への導入シグナル。即説明/診断に入らず、この一言で病歴聴取の抜けを防ぐ（RP1・4・7の失点）。" },
+  { cat: "⭐最優先", jp: "あまり心配しすぎないでください。これは十分に治療可能なものです。", en: "Try not to worry too much — this is very treatable.", note: "二軍（安心させる）。優先度1-4が安定してから。" },
+  { cat: "⭐最優先", jp: "ご心配はよくわかります。ただ良い知らせは、これが非常によくある、管理可能な状態だということです。", en: "I can understand why you're concerned, but the good news is that this is very common and manageable.", note: "二軍（安心させる）。the good news is... で前向きに転換。" },
+  { cat: "⭐最優先", jp: "私のおすすめは、塩分を少しずつ減らしていくことです。", en: "What I'd suggest is that you cut back on salt gradually.", note: "二軍（助言する）。What I'd suggest is... で柔らかく切り出す。" },
+  { cat: "⭐最優先", jp: "2週間、症状日記をつけてみるとよいと思いますよ。", en: "It would be a good idea to keep a symptom diary for two weeks.", note: "二軍（助言する）。" },
+  { cat: "⭐最優先", jp: "何が起きているのか、わかりやすい言葉でご説明しますね。", en: "Let me explain what's happening in simple terms.", note: "二軍（説明する）。in simple terms = 専門用語を使わない合図。" },
+  { cat: "⭐最優先", jp: "簡単に言うと、血圧が本来あるべき値より高くなっていて、心臓に負担がかかっている状態です。", en: "Basically, your blood pressure is higher than it should be, which puts strain on your heart.", note: "二軍（説明する）。put strain on = 〜に負担をかける。" },
+  { cat: "⭐最優先", jp: "ここまでのところ、おわかりいただけましたか？", en: "Does that make sense so far?", note: "二軍（理解確認）。説明の区切りごとに挟む。" },
+  { cat: "⭐最優先", jp: "きちんとご説明できたか確認させてください。このお薬をどのように服用するか、教えていただけますか？", en: "Just to make sure I've explained it clearly — could you tell me how you'd take this medication?", note: "二軍（理解確認）。teach-backを「自分の説明の確認」として頼むと患者を試す形にならない。" },
+
   // ============ 1. 導入・挨拶 ============
   { cat: "導入・挨拶", jp: "こんにちは、本日診察を担当いたします、医師のノハラと申します。", en: "Hello, my name is Dr Nohara. I'm the doctor looking after you today.", note: "自己紹介はロールプレイ冒頭の定型。Dr + 姓で名乗り、職種を添える。" },
   { cat: "導入・挨拶", jp: "お名前を確認させていただいてもよろしいですか？", en: "Could I just confirm your name, please?", note: "Could I just... で柔らかい依頼に。" },
