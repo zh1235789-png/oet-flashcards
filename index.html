@@ -62,6 +62,16 @@
   }
   .btn:hover, select:hover { border-color: var(--primary); }
   .btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .storage-warn {
+    max-width: 640px;
+    margin-bottom: 12px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.78rem;
+    line-height: 1.6;
+  }
   .progress-wrap {
     width: 100%;
     max-width: 640px;
@@ -379,6 +389,15 @@ const CARDS = [
 ];
 
 const LS_KEY = "oet_flashcards_v1";
+
+// Safariプライベートブラウズ・data: URL 等では localStorage へのアクセス自体が
+// 例外を投げる。素で触ると初期化がそこで止まり、カテゴリ選択が空・カード0枚になる。
+// 読み書きを潰しても「進捗が保存されないだけ」で学習はできるので、例外を飲む。
+const store = {
+  available: true,
+  get(k) { try { return localStorage.getItem(k); } catch (e) { this.available = false; return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { this.available = false; } },
+};
 let state = {
   category: "all",
   reviewMode: false,
@@ -393,12 +412,12 @@ function cardKey(c) { return c.cat + "::" + c.jp; }
 
 function loadState() {
   try {
-    const saved = JSON.parse(localStorage.getItem(LS_KEY));
+    const saved = JSON.parse(store.get(LS_KEY));
     if (saved) { state.known = saved.known || {}; state.review = saved.review || {}; }
   } catch (e) {}
 }
 function saveState() {
-  localStorage.setItem(LS_KEY, JSON.stringify({ known: state.known, review: state.review }));
+  store.set(LS_KEY, JSON.stringify({ known: state.known, review: state.review }));
 }
 
 function filteredCards() {
@@ -428,7 +447,7 @@ function currentCard() {
 
 // --- 音声管理: 自然な音声を優先的に選ぶ ---
 let voices = [];
-let selectedVoiceURI = localStorage.getItem("oet_voice") || "";
+let selectedVoiceURI = store.get("oet_voice") || "";
 
 // 自然さの目安スコア。Google音声・macOSの拡張(Enhanced)/プレミアム音声を上位に。
 function voiceScore(v) {
@@ -561,13 +580,21 @@ function markReview() {
 // --- setup ---
 loadState();
 
+// 進捗が保存されない環境であることを黙って隠さない（カードの学習自体は動く）
+if (!store.available) {
+  const warn = document.createElement("p");
+  warn.className = "storage-warn";
+  warn.textContent = "⚠️ この環境では進捗（✓・要復習）が保存されません。プライベートブラウズを解除するか、通常のSafariで開いてください。カードの学習はそのまま使えます。";
+  document.querySelector("header").insertAdjacentElement("afterend", warn);
+}
+
 populateVoices();
 if (window.speechSynthesis && speechSynthesis.onvoiceschanged !== undefined) {
   speechSynthesis.onvoiceschanged = populateVoices; // Chromeは非同期で音声リストが届く
 }
 document.getElementById("voiceSelect").addEventListener("change", (e) => {
   selectedVoiceURI = e.target.value;
-  localStorage.setItem("oet_voice", selectedVoiceURI);
+  store.set("oet_voice", selectedVoiceURI);
   const c = currentCard();
   if (c) speak(c.en); // 切り替え後すぐ試聴
 });
