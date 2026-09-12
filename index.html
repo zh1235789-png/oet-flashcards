@@ -98,11 +98,14 @@
     cursor: pointer;
     transform-style: preserve-3d;
     transition: transform 0.5s;
+    /* 表裏を同じグリッドセルに重ねる。枠の高さ＝背の高い面の高さになり、
+       長い英訳やnoteが枠外へはみ出さない（旧: position:absolute で溢れていた） */
+    display: grid;
   }
   .card.flipped { transform: rotateY(180deg); }
   .card-face {
-    position: absolute;
-    inset: 0;
+    grid-area: 1 / 1;
+    position: relative;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     background: var(--card-bg);
@@ -112,10 +115,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 36px 28px;
+    /* 上端の カテゴリタグ / ANSWER ラベル（top:16px・高さ約24px）に本文が重ならない余白 */
+    padding: 52px 28px 32px;
     text-align: center;
   }
   .card-back { transform: rotateY(180deg); }
+  /* 2文以上の長い答えは中央揃えだと行頭が揃わず読みにくいので左揃えにする */
+  .card-face.align-left { text-align: left; }
+  .card-face.align-left .note { width: 100%; }
   .category-tag {
     position: absolute;
     top: 16px;
@@ -210,6 +217,7 @@
     .jp-text { font-size: 1.1rem; }
     .en-text { font-size: 1.05rem; }
     .card { min-height: 360px; }
+    .card-face { padding: 48px 18px 26px; }
   }
 </style>
 </head>
@@ -491,15 +499,18 @@ function render() {
 
   const en = card.en.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   const jp = card.jp.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  // 長い文は中央揃えだと行頭がばらついて読みにくいので左揃えに切り替える
+  const frontAlign = card.jp.length > 45 ? " align-left" : "";
+  const backAlign = (card.en.length > 90 || card.note) ? " align-left" : "";
   area.innerHTML = `
     <div class="card ${state.flipped ? "flipped" : ""}" id="theCard">
-      <div class="card-face card-front">
+      <div class="card-face card-front${frontAlign}">
         <span class="category-tag">${card.cat}</span>
         <span class="face-label">日本語 → 英語で言ってみよう</span>
         <p class="jp-text">${jp}</p>
         <p class="hint">クリック or Space で答えを表示</p>
       </div>
-      <div class="card-face card-back">
+      <div class="card-face card-back${backAlign}">
         <span class="category-tag">${card.cat}</span>
         <span class="face-label">ANSWER</span>
         <p class="en-text">${en}</p>
@@ -510,11 +521,18 @@ function render() {
 
   document.getElementById("theCard").addEventListener("click", (e) => {
     if (e.target.id === "speakBtn") return;
-    state.flipped = !state.flipped;
-    document.getElementById("theCard").classList.toggle("flipped", state.flipped);
+    flip();
   });
   const sb = document.getElementById("speakBtn");
   if (sb) sb.addEventListener("click", (e) => { e.stopPropagation(); speak(card.en); });
+}
+
+// カードをめくる。再描画せずクラスだけ切り替えるのでキー操作でもアニメーションする
+function flip() {
+  const el = document.getElementById("theCard");
+  if (!el) return;
+  state.flipped = !state.flipped;
+  el.classList.toggle("flipped", state.flipped);
 }
 
 function next() {
@@ -578,7 +596,7 @@ document.getElementById("knowBtn").addEventListener("click", markKnown);
 document.getElementById("dontKnowBtn").addEventListener("click", markReview);
 
 document.addEventListener("keydown", (e) => {
-  if (e.code === "Space") { e.preventDefault(); state.flipped = !state.flipped; render(); }
+  if (e.code === "Space") { e.preventDefault(); flip(); }
   else if (e.key === "ArrowRight") next();
   else if (e.key === "ArrowLeft") prev();
   else if (e.key === "1") markReview();
