@@ -229,6 +229,23 @@
     .card { min-height: 360px; }
     .card-face { padding: 48px 18px 26px; }
   }
+  .sync-panel {
+    display: none; max-width: 640px; width: 100%; margin: 0 auto 16px;
+    background: var(--card-bg); border: 1px solid #cbd5e1; border-radius: var(--radius);
+    padding: 14px 16px; font-size: 0.85rem; color: var(--text);
+  }
+  .sync-panel.open { display: block; }
+  .sync-panel h2 { font-size: 0.95rem; color: var(--primary); margin-bottom: 8px; }
+  .sync-panel ol { padding-left: 20px; color: var(--text-sub); line-height: 1.7; }
+  .sync-panel a { color: var(--primary); }
+  .sync-panel input {
+    width: 100%; padding: 10px; margin-top: 8px; font-size: 16px;
+    border: 1px solid #cbd5e1; border-radius: 10px; background: var(--bg); color: var(--text);
+  }
+  .sync-panel .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .sync-panel .note { color: var(--text-sub); margin-top: 8px; font-size: 0.78rem; line-height: 1.6; }
+  .sync-status { color: var(--text-sub); }
+  .sync-status.err { color: var(--red); }
 </style>
 </head>
 <body>
@@ -242,6 +259,7 @@
   <button class="btn" id="shuffleBtn">🔀 シャッフル</button>
   <button class="btn" id="reviewModeBtn">⭐ 要復習のみ</button>
   <button class="btn" id="resetBtn">↺ 進捗リセット</button>
+  <button class="btn" id="syncBtn">☁️ 同期</button>
   <select id="voiceSelect" aria-label="音声選択" title="読み上げ音声"></select>
   <select id="rateSelect" aria-label="読み上げ速度" title="読み上げ速度">
     <option value="0.7">🐢 ゆっくり</option>
@@ -249,6 +267,8 @@
     <option value="1.0">ネイティブ速度</option>
   </select>
 </div>
+
+<div class="sync-panel" id="syncPanel"></div>
 
 <div class="progress-wrap">
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -452,6 +472,8 @@ let state = {
   flipped: false,
   known: {},   // cardKey -> true
   review: {},  // cardKey -> true
+  ts: {},      // cardKey -> 最後に印を付けた時刻（端末間同期のマージに使う）
+  resetAt: 0,  // リセットした時刻。これより古い印は同期時に捨てる
 };
 
 function cardKey(c) { return c.cat + "::" + c.jp; }
@@ -459,11 +481,101 @@ function cardKey(c) { return c.cat + "::" + c.jp; }
 function loadState() {
   try {
     const saved = JSON.parse(store.get(LS_KEY));
-    if (saved) { state.known = saved.known || {}; state.review = saved.review || {}; }
+    if (saved) {
+      state.known = saved.known || {}; state.review = saved.review || {};
+      state.ts = saved.ts || {}; state.resetAt = saved.resetAt || 0;
+      // 同期を入れる前に付けた印には時刻が無い。1回だけ現在時刻を入れて土俵に載せる。
+      for (const k of [...Object.keys(state.known), ...Object.keys(state.review)]) {
+        if (!state.ts[k]) state.ts[k] = Date.now();
+      }
+    }
   } catch (e) {}
 }
 function saveState() {
-  store.set(LS_KEY, JSON.stringify({ known: state.known, review: state.review }));
+  store.set(LS_KEY, JSON.stringify({ known: state.known, review: state.review, ts: state.ts, resetAt: state.resetAt }));
+}
+
+// ============ 端末間同期（GitHubの非公開Gist） ============
+// iPhoneとiPadで同じ進捗を見るための同期。サーバーを持たずに済ませるため、
+// ユーザー自身のGist 1ファイルを共有メモ代わりに使う。
+const SYNC_KEY = "oet_flashcards_sync", GIST_FILE = "oet-flashcards.json",
+      GIST_DESC = "OET Speaking flashcards sync (auto)";
+let SY = (() => { try { return JSON.parse(store.get(SYNC_KEY)) || {}; } catch (e) { return {}; } })();
+function saveSY() { store.set(SYNC_KEY, JSON.stringify(SY)); }
+let syncing = false, syncAgain = false, syncTimer = null;
+
+async function gh(path, opts = {}) {
+  const res = await fetch("https://api.github.com" + path, Object.assign({ cache: "no-store" }, opts, {
+    headers: { "Authorization": "Bearer " + SY.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+  }));
+  if (!res.ok) throw new Error(
+    res.status === 401 ? "トークンが無効か期限切れです"
+    : (res.status === 403 || res.status === 404) ? "トークンにgist権限がありません（" + res.status + "）"
+    : "GitHubエラー " + res.status);
+  return res.status === 204 ? null : res.json();
+}
+function syncDoc() {
+  return { v: 1, resetAt: state.resetAt || 0, known: state.known, review: state.review, ts: state.ts };
+}
+// カード単位で「印を付けた時刻が新しい方」を採用する。
+// 同じカードを両方の端末で触っても、あとから触った方が残る。
+function mergeRemote(R) {
+  if (!R || (!R.known && !R.review)) return;
+  const resetAt = Math.max(state.resetAt || 0, R.resetAt || 0);
+  const mine = { known: state.known, review: state.review, ts: state.ts };
+  const theirs = { known: R.known || {}, review: R.review || {}, ts: R.ts || {} };
+  const known = {}, review = {}, ts = {};
+  for (const k of new Set([...Object.keys(mine.ts), ...Object.keys(theirs.ts)])) {
+    const mt = mine.ts[k] || 0, tt = theirs.ts[k] || 0;
+    const src = tt > mt ? theirs : mine, t = Math.max(mt, tt);
+    if (t < resetAt) continue;            // リセットより前の印は捨てる
+    if (src.known[k]) known[k] = true;
+    else if (src.review[k]) review[k] = true;
+    else continue;                        // 印が外れた状態が最新なら残さない
+    ts[k] = t;
+  }
+  state.known = known; state.review = review; state.ts = ts; state.resetAt = resetAt;
+}
+async function syncNow() {
+  if (!SY.token) return;
+  if (syncing) { syncAgain = true; return; }
+  syncing = true; SY.state = "syncing"; renderSync();
+  try {
+    if (!SY.gistId) {
+      const list = await gh("/gists?per_page=100");
+      const g = list.find(x => x.files && x.files[GIST_FILE]);
+      SY.gistId = g ? g.id : (await gh("/gists", { method: "POST", body: JSON.stringify({
+        description: GIST_DESC, public: false, files: { [GIST_FILE]: { content: JSON.stringify(syncDoc()) } } }) })).id;
+    }
+    const g = await gh("/gists/" + SY.gistId);
+    const f = g.files[GIST_FILE];
+    let remoteText = f ? f.content : "";
+    if (f && f.truncated) remoteText = await (await fetch(f.raw_url, { cache: "no-store" })).text();
+    let remote = null; try { remote = JSON.parse(remoteText); } catch (e) {}
+    mergeRemote(remote); saveState();
+    const mineText = JSON.stringify(syncDoc());
+    if (mineText !== remoteText) await gh("/gists/" + SY.gistId, { method: "PATCH",
+      body: JSON.stringify({ files: { [GIST_FILE]: { content: mineText } } }) });
+    SY.last = Date.now(); SY.state = "ok"; SY.err = "";
+  } catch (e) {
+    SY.state = "err";
+    SY.err = (typeof navigator !== "undefined" && navigator.onLine === false)
+      ? "オフライン（次にネットにつながったとき同期します）" : e.message;
+  }
+  saveSY(); syncing = false;
+  renderSync(); render();
+  if (syncAgain) { syncAgain = false; syncNow(); }
+}
+function syncSoon() { if (!SY.token) return; clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 2000); }
+function syncText() {
+  if (!SY.token) return "";
+  if (SY.state === "syncing") return "☁️ 同期中…";
+  if (SY.state === "err") return "⚠️ 同期エラー：" + SY.err;
+  if (SY.last) {
+    const d = new Date(SY.last);
+    return `☁️ 同期済み ${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }
+  return "☁️ 同期待ち";
 }
 
 function filteredCards() {
@@ -611,7 +723,8 @@ function markKnown() {
   const k = cardKey(c);
   state.known[k] = true;
   delete state.review[k];
-  saveState();
+  state.ts[k] = Date.now();
+  saveState(); syncSoon();
   next(); render();
 }
 function markReview() {
@@ -619,7 +732,8 @@ function markReview() {
   const k = cardKey(c);
   state.review[k] = true;
   delete state.known[k];
-  saveState();
+  state.ts[k] = Date.now();
+  saveState(); syncSoon();
   next(); render();
 }
 
@@ -658,11 +772,54 @@ document.getElementById("reviewModeBtn").addEventListener("click", (e) => {
   rebuildOrder(); render();
 });
 document.getElementById("resetBtn").addEventListener("click", () => {
-  if (confirm("学習進捗（✓・要復習）をリセットしますか？")) {
-    state.known = {}; state.review = {};
-    saveState(); render();
+  if (confirm("学習進捗（✓・要復習）をリセットしますか？" + (SY.token ? "\n同期している他の端末からも消えます。" : ""))) {
+    state.known = {}; state.review = {}; state.ts = {}; state.resetAt = Date.now();
+    saveState(); render(); syncNow();
   }
 });
+function renderSync() {
+  const panel = document.getElementById("syncPanel");
+  if (!panel) return;
+  panel.innerHTML = SY.token
+    ? `<h2>iPhone・iPad間の同期</h2>
+       <p class="sync-status ${SY.state === "err" ? "err" : ""}" id="syncStatus">${syncText()}</p>
+       <div class="row"><button class="btn" id="syncGoBtn">今すぐ同期</button>
+       <button class="btn" id="syncOffBtn">この端末の同期を解除</button></div>
+       <p class="note">アプリを開いたときと、印を付けた2秒後に自動で同期します。</p>`
+    : `<h2>iPhone・iPad間の同期（GitHubの非公開Gist）</h2>
+       <ol>
+         <li><a href="https://github.com/settings/tokens/new?scopes=gist&description=OET%20flashcards%20sync" target="_blank" rel="noopener">GitHubのトークン作成画面</a>を開く（gistにだけチェックが入った状態で開きます）</li>
+         <li>Expirationを選び、一番下の「Generate token」を押す</li>
+         <li>表示された ghp_… をコピーして下に貼り付け、「接続」を押す</li>
+         <li>もう一方の端末でも同じトークンを貼り付ける</li>
+       </ol>
+       <input id="syncToken" type="password" autocomplete="off" placeholder="ghp_…">
+       <div class="row"><button class="btn" id="syncOnBtn">接続</button></div>
+       <p class="note">トークンはこの端末の中にだけ保存され、GitHub以外には送られません。<br>
+       Readingの通勤ドリルと同じトークンを使い回せます（保存先のファイルは別です）。</p>`;
+  const on = document.getElementById("syncOnBtn");
+  if (on) on.addEventListener("click", () => {
+    const t = document.getElementById("syncToken").value.trim();
+    if (!t) return;
+    SY = { token: t }; saveSY(); renderSync(); syncNow();
+  });
+  const go = document.getElementById("syncGoBtn");
+  if (go) go.addEventListener("click", syncNow);
+  const off = document.getElementById("syncOffBtn");
+  if (off) off.addEventListener("click", () => {
+    if (confirm("この端末の同期を解除します（進捗はこの端末に残ります）")) { SY = {}; saveSY(); renderSync(); }
+  });
+}
+document.getElementById("syncBtn").addEventListener("click", () => {
+  const panel = document.getElementById("syncPanel");
+  panel.classList.toggle("open");
+  if (panel.classList.contains("open")) renderSync();
+});
+renderSync();
+syncNow();
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncNow(); });
+window.addEventListener("online", syncNow);
+
 document.getElementById("nextBtn").addEventListener("click", next);
 document.getElementById("prevBtn").addEventListener("click", prev);
 document.getElementById("knowBtn").addEventListener("click", markKnown);
