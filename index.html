@@ -246,12 +246,78 @@
   .sync-panel .note { color: var(--text-sub); margin-top: 8px; font-size: 0.78rem; line-height: 1.6; }
   .sync-status { color: var(--text-sub); }
   .sync-status.err { color: var(--red); }
+
+  /* ===== 🎭 ロールプレイ（カード→流れ） ===== */
+  .st-導入 { --st: #0d7377; --st-bg: #e0f2f1; }
+  .st-問診 { --st: #2563eb; --st-bg: #dbeafe; }
+  .st-共感 { --st: #db2777; --st-bg: #fce7f3; }
+  .st-説明 { --st: #7c3aed; --st-bg: #ede9fe; }
+  .st-提案 { --st: #c2410c; --st-bg: #ffedd5; }
+  .st-安心 { --st: #15803d; --st-bg: #dcfce7; }
+  .st-締め { --st: #b91c1c; --st-bg: #fee2e2; }
+  .st-card, .st-all { --st: #475569; --st-bg: #e2e8f0; }
+  .flow {
+    width: 100%; max-width: 640px; margin-bottom: 12px;
+    display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+  .flow button {
+    flex: 0 0 auto; border: 1px solid transparent; border-radius: 999px;
+    padding: 4px 9px; font-size: 0.72rem; font-family: inherit; cursor: pointer;
+    background: var(--st-bg); color: var(--st); font-weight: 600; opacity: 0.55;
+  }
+  .flow button.done { opacity: 0.9; }
+  .flow button.now { opacity: 1; border-color: var(--st); box-shadow: 0 0 0 2px var(--st-bg); }
+  .stage-tag {
+    position: absolute; top: 16px; left: 16px; font-size: 0.72rem; font-weight: 700;
+    padding: 4px 10px; border-radius: 999px; background: var(--st-bg); color: var(--st);
+  }
+  .task-ref {
+    width: 100%; text-align: left; font-size: 0.78rem; line-height: 1.55; color: var(--text-sub);
+    background: #f8fafc; border-left: 3px solid var(--st, #cbd5e1); border-radius: 6px;
+    padding: 6px 10px; margin-bottom: 14px;
+  }
+  .task-ref b { color: var(--text); }
+  .prev-line {
+    width: 100%; text-align: left; font-size: 0.78rem; line-height: 1.5; color: #94a3b8;
+    margin-bottom: 12px; font-style: italic;
+  }
+  .rp-panel {
+    background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 22px 24px; text-align: left; line-height: 1.6;
+  }
+  .rp-panel .rp-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap;
+    border-bottom: 2px solid var(--text); padding-bottom: 6px; margin-bottom: 12px; }
+  .rp-panel .rp-head b { letter-spacing: 0.06em; font-size: 0.8rem; }
+  .rp-panel .rp-head span { font-size: 0.8rem; color: var(--text-sub); }
+  .rp-panel h2 { font-size: 1.1rem; color: var(--primary); margin-bottom: 10px; }
+  .rp-row { display: grid; grid-template-columns: 88px 1fr; gap: 6px 12px; margin-bottom: 10px; font-size: 0.9rem; }
+  .rp-row > dt { font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; color: var(--text-sub); padding-top: 2px; }
+  .rp-row ol { padding-left: 1.2em; }
+  .rp-row li { margin-bottom: 6px; }
+  .rp-words { font-size: 0.8rem; background: #fef3c7; color: #92400e; border-radius: 8px; padding: 6px 10px; margin: 6px 0 12px; }
+  .rp-flowline { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 0.75rem; margin: 4px 0 14px; color: var(--text-sub); }
+  .rp-flowline span.chip { background: var(--st-bg); color: var(--st); border-radius: 999px; padding: 2px 8px; font-weight: 600; }
+  .rp-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+  .rp-actions .btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .rp-script { list-style: none; }
+  .rp-script li { display: grid; grid-template-columns: 44px 1fr; gap: 10px; padding: 9px 0; border-bottom: 1px dashed #e2e8f0; }
+  .rp-script li.speaking { background: #fffbeb; }
+  .rp-script .chip { align-self: start; text-align: center; font-size: 0.7rem; font-weight: 700; border-radius: 999px;
+    padding: 2px 0; background: var(--st-bg); color: var(--st); }
+  .rp-script .en { font-size: 0.92rem; color: var(--primary-dark); font-weight: 600; }
+  .rp-script .jp { font-size: 0.78rem; color: var(--text-sub); margin-top: 2px; }
+  .rp-script.hide-jp .jp { display: none; }
+  @media (max-width: 480px) {
+    .rp-panel { padding: 18px 16px; }
+    .rp-row { grid-template-columns: 1fr; gap: 2px; }
+  }
 </style>
 </head>
 <body>
 <header>
   <h1>🩺 OET Speaking フラッシュカード <span style="font-size:0.8rem;color:var(--text-sub)"></span></h1>
-  <p>和文を見て英語で言ってみる → カードをタップして答え合わせ</p>
+  <p>和文を見て英語で言ってみる → カードをタップして答え合わせ<br>🎭 カテゴリ選択の下の「ロールプレイ」で、カード→会話の流れの順に練習</p>
 </header>
 
 <div class="controls">
@@ -269,6 +335,8 @@
 </div>
 
 <div class="sync-panel" id="syncPanel"></div>
+
+<div class="flow" id="flowRail" hidden></div>
 
 <div class="progress-wrap">
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -484,6 +552,539 @@ const CARDS = [
   { cat: "締めくくり", jp: "本日はお話しいただき、ありがとうございました。", en: "Thank you for talking with me today.", note: "" },
 ];
 
+// ============ 🎭 ロールプレイ（カード→会話の流れの順に和文英訳・2026-10-21追加） ============
+// 1枚＝SOLO Medicine の1ケース。まずロールカード（場面＋Task）を見せ、
+// そのあと steps を会話の順（導入→問診→共感→説明→提案→安心→締め）に出す。
+// s=段階, t=対応するTask番号（0=カード外の定型。1セリフで2つ扱うときは配列）, n=メモ。
+// ロールカードの本文はSOLO問題集の要約（原文の転載ではない）。
+const RP_STAGES = ["導入", "問診", "共感", "説明", "提案", "安心", "締め"];
+const ROLEPLAYS = [
+  { id: "01", title: "喘息とベントリン", setting: "Suburban clinic",
+    brief: "The patient recently had the flu and now has acute shortness of breath. You diagnose asthma.",
+    tasks: [
+      "Find out what the patient knows about asthma.",
+      "Explain the causes (airborne irritants such as pollen or smoke, exercise and stress, inherited tendency).",
+      "Discuss treatment: Ventolin (salbutamol) inhaler opens the airways.",
+      "Reassure the patient that Ventolin is safe when taken as prescribed.",
+      "Deal with the patient's anxiety: asthma can be well controlled and people live normal lives.",
+    ],
+    words: "asthma / airways / Ventolin / salbutamol / inhaler / trigger / pollen",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、担当医の[名前]です。インフルエンザの後から息苦しさが続いていると伺いました。今朝はどんな様子でしたか？", en: "Hello, I'm Dr [Name]. I understand you've been getting short of breath since your recent flu — can you tell me what happened this morning?" },
+      { s: "共感", t: 5, jp: "息ができないと感じたのは、本当に怖かったですよね。", en: "That must have been really frightening, not being able to catch your breath." },
+      { s: "問診", t: 1, jp: "私の考えをお話しする前に、喘息についてどんなことをご存じか教えていただけますか？", en: "Before I go through what I think is going on, can I ask what you already know about asthma?" },
+      { s: "説明", t: 2, jp: "喘息は、肺の空気の通り道が狭くなる病気です。花粉や煙などの刺激、運動やストレスがきっかけになり、親からの体質も関係します。", en: "Asthma is a condition where the airways in the lungs become narrow. It can be triggered by things in the air like pollen or smoke, by exercise or stress, and it can also run in families." },
+      { s: "提案", t: 3, jp: "治療にはベントリンという吸入薬を使います。吸い込むと気道がすぐに広がって、呼吸が楽になります。", en: "The treatment I'd recommend is an inhaler called Ventolin. When you breathe it in, it opens up your airways quickly, so breathing becomes easier." },
+      { s: "安心", t: 4, jp: "誤用の話を聞いてご心配なのはわかります。でもベントリンは広く使われている安全な薬で、処方どおりに使えば問題ありません。", en: "I understand you've heard worrying things about it, but Ventolin is a very common and safe medicine, as long as you use it as prescribed." },
+      { s: "安心", t: 5, jp: "喘息で亡くなる話を聞くと怖くなりますよね。でも喘息はきちんとコントロールでき、ほとんどの方が普通の生活を送っています。", en: "I can understand why those stories frighten you. But asthma can be very well controlled, and most people with asthma live completely normal, active lives." },
+      { s: "締め", t: 0, jp: "まとめますと、喘息です。していただきたいのは、苦しいときにベントリンを処方どおり使うことです。2週間後に見直しましょう。もし吸入しても息苦しさが治まらない、話せないほど苦しいときは、すぐに救急を受診してください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — you have asthma, and what I'd like you to do is use the Ventolin inhaler as prescribed whenever you feel tight or short of breath. Let's review this in two weeks. If your breathing doesn't improve after using it, or you're too breathless to speak, please go to the emergency department straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "02", title: "小児の水ぼうそう", setting: "Suburban clinic",
+    brief: "A parent brings in their six-year-old daughter with a three-day rash and mild fever. She clearly has chickenpox, with no complications.",
+    tasks: [
+      "Tell the parent the child has chickenpox, and find out what they want to know.",
+      "Discuss management: it is contagious and lasts 2–3 weeks; keep her home and away from other children until the spots scab (about a week).",
+      "Outline ways to reduce itching: loose cotton clothing, calamine lotion, antihistamines (e.g. Benadryl).",
+      "Advise a return visit if any new or unusual symptoms appear.",
+    ],
+    words: "chickenpox / contagious / scab / calamine lotion / antihistamine",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、担当医の[名前]です。お嬢さんに3日前から発疹と微熱があると伺いました。", en: "Hello, I'm Dr [Name]. I understand your daughter has had a rash and a slight temperature for the past three days." },
+      { s: "問診", t: 0, jp: "発疹はどこから始まって、どう広がりましたか？ かゆがっていますか？", en: "Can you tell me where the rash started and how it's spread? Is she scratching a lot?" },
+      { s: "説明", t: 1, jp: "診察したところ、水ぼうそうです。熱は軽く、合併症の兆候もありません。", en: "Having examined her, this is chickenpox. Her temperature is only mild, and there are no signs of complications." },
+      { s: "問診", t: 1, jp: "水ぼうそうについて、特に知りたいことはありますか？", en: "What would you most like to know about chickenpox?" },
+      { s: "説明", t: 2, jp: "水ぼうそうはとてもうつりやすく、2〜3週間続くことがあります。", en: "Chickenpox spreads very easily between people, and it can last two to three weeks." },
+      { s: "提案", t: 2, jp: "発疹がすべてかさぶたになるまで、通常1週間ほどは学校を休んで、他のお子さんとの接触を避けてください。", en: "She'll need to stay home from school and away from other children until all the spots have scabbed over — usually about a week." },
+      { s: "提案", t: 3, jp: "かゆみには、ゆったりした綿の服を着せて、カラミンローションや抗ヒスタミン薬を使うと楽になります。", en: "To ease the itching, dress her in loose cotton clothes, and calamine lotion or an antihistamine like Benadryl can help." },
+      { s: "締め", t: 4, jp: "まとめますと、水ぼうそうです。していただきたいのは、かさぶたになるまで自宅で休ませ、かゆみ止めを使うことです。1週間後にもう一度診せてください。もし高熱、呼吸が苦しい、発疹が赤く腫れて痛む、ひどく眠そうなど、いつもと違う症状があれば、すぐに連れてきてください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — this is chickenpox, and what I'd like you to do is keep her at home until the spots have scabbed, and use the lotion and antihistamine for the itch. Let's see her again in a week. If she develops a high fever, difficulty breathing, spots that become red, swollen and painful, or she seems very drowsy, please bring her straight back. Do you have any other questions before we finish?", n: "Task4（新しい・いつもと違う症状なら再受診）がそのまま safety net になる。" },
+    ] },
+
+  { id: "03", title: "胃潰瘍（悪性の可能性）", setting: "Suburban general practice",
+    brief: "A relatively new patient has recurrent epigastric pain. The barium meal you ordered shows a gastric ulcer on the lesser curve that may be malignant. You have no record of previous episodes.",
+    tasks: [
+      "Explain the findings and the possibility of malignancy.",
+      "Ask about previous episodes of epigastric pain.",
+      "Advise urgent referral for gastroscopy and explain the procedure simply (camera on a tube, pictures and samples).",
+      "Find out what the patient wants to know now; reassure by mentioning other, non-malignant causes.",
+    ],
+    words: "gastroscopy / barium meal / malignant / benign / epigastric / ulcer / specimen",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。バリウム検査の結果が出ましたので、今日はそのお話をさせてください。", en: "Hello, I'm Dr [Name]. Your barium test results have come back, so I'd like to go through them with you today." },
+      { s: "説明", t: 1, jp: "残念ながら、バリウム検査で少しお話ししなければならないことが見つかりました。", en: "I'm afraid the barium test has shown something we need to talk about.", n: "warning shot。結果を言う前に必ずこの1文（Card14では緩衝なしで即告知して減点）。" },
+      { s: "説明", t: 1, jp: "胃の壁に潰瘍があります。このような潰瘍は、場合によってはがんのこともあるので、きちんと調べる必要があります。", en: "There is an ulcer on the wall of your stomach. In some cases an ulcer like this can be cancerous, so we do need to check it properly.", n: "「がんかもしれない」を省略しない。ただし断定もしない。" },
+      { s: "共感", t: 0, jp: "こう聞かされて怖くお感じになるのは当然です。今わかっていることと、これから何をするのかをお話しさせてください。", en: "I can see this is frightening to hear, and that's completely natural. Let me tell you what we know and what happens next.", n: "1-E（恐怖）。前回は緊張でFluencyが崩壊した。この固定文で次を考える時間を稼ぐ。" },
+      { s: "問診", t: 2, jp: "以前にも、このようなみぞおちの痛みがあったことはありますか？", en: "Have you had pain like this in the upper part of your stomach before?", n: "新しい患者で既往の記録がない設定＝必ず聞く。" },
+      { s: "提案", t: 3, jp: "はっきり診断するために、至急、胃カメラの検査にご紹介します。", en: "To find out exactly what it is, I'd like to refer you urgently for a gastroscopy." },
+      { s: "説明", t: 3, jp: "胃カメラは、細い管の先にカメラが付いたものを胃まで入れて、中を直接見て、小さな組織を採ってくる検査です。", en: "A gastroscopy means passing a thin tube with a camera down into your stomach, so we can look at it directly and take a small sample." },
+      { s: "問診", t: 4, jp: "今の時点で、どこまで詳しくお知りになりたいですか？", en: "How much would you like to know about this at this stage?" },
+      { s: "安心", t: 4, jp: "他にも原因はたくさんあります。単なる潰瘍や消化不良のほうが、がんよりずっとよくある原因です。", en: "There are lots of other possible causes — a simple ulcer or indigestion are far more common than cancer.", n: "悪性の話をしたら、必ず非悪性の可能性で釣り合いを取る。" },
+      { s: "締め", t: 0, jp: "まとめますと、検査で直接見る必要のある潰瘍が見つかりました。していただきたいのは胃カメラを受けることです。1週間以内に受けられるよう至急手配します。もし痛みが激しくなったり、血を吐く・黒い便が出るようなら、すぐに救急を受診してください。終わる前に何かご質問はありますか？", en: "So, to summarise — the test has shown an ulcer that we need to look at directly, and what I'd like you to do is come in for the gastroscopy. I'll arrange it urgently, within the next week. If the pain becomes severe, or you vomit blood or pass black stools, please go to the emergency department straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "04", title: "小児の湿疹", setting: "Suburban clinic",
+    brief: "A worried parent has brought in their young child, who has eczema.",
+    tasks: [
+      "Find out what the parent wants to know about eczema.",
+      "Explain eczema (sensitive skin, immune disorder, faulty skin barrier, dryness and inflammation; genetic and environmental causes).",
+      "Discuss the prognosis: controlled but not cured; about half of children outgrow it, and the rest can be managed.",
+      "Answer the question about food allergies: linked, but they do not cause eczema; avoiding foods won't prevent it.",
+      "Advise on management: avoid irritants (most soaps, wool next to the skin, scratching and rubbing).",
+    ],
+    words: "eczema / skin barrier / inflammation / outgrow / food allergy / irritant / moisturise",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、担当医の[名前]です。今日はお子さんの湿疹のことでいらしたと伺いました。", en: "Hello, I'm Dr [Name]. I understand you've come in about your son's eczema." },
+      { s: "問診", t: 1, jp: "湿疹について、特に知りたいことや心配なことは何ですか？", en: "What would you most like to know about eczema, or what's worrying you most?", n: "前回は病歴ゼロで即説明に入った。まず聞く。" },
+      { s: "共感", t: 0, jp: "お子さんのこの先のことがどれほど心配か、伝わってきます。当然のお気持ちです。これが日々の生活で実際にどういうことなのか、ご説明させてください。", en: "I can hear how worried you are about his future, and that's completely natural. Let me show you what this actually means day to day." },
+      { s: "説明", t: 2, jp: "湿疹は皮膚が過敏になる病気です。皮膚のバリアがうまく働かず、乾燥と炎症が起きます。体質と環境の両方が関係します。", en: "Eczema means the skin is overly sensitive — the skin barrier doesn't work properly, so it becomes dry and inflamed. Both genes and the environment play a part." },
+      { s: "説明", t: 3, jp: "湿疹はコントロールはできますが、治しきることはできません。ただ、およそ半数のお子さんは成長とともに自然に出なくなります。残る場合でも、十分に管理できます。", en: "Eczema can be controlled but not cured — and about half of children outgrow it completely. For the rest, it can still be managed well.", n: "⚠️ \"have to grow it\" と2回誤った。outgrow を紙に書く。" },
+      { s: "説明", t: 4, jp: "関連はありますが、食物アレルギーが湿疹の原因ではありません。どちらも免疫の問題なので、特定の食べ物を避けても湿疹は防げないのです。", en: "They are linked, but food allergies do not cause the eczema. Both are problems with the immune system — so avoiding certain foods will not prevent it.", n: "1-G：can't は can に聞こえる。will not / do not で言い切る。" },
+      { s: "提案", t: 5, jp: "肌を刺激するものは避けてください。ほとんどの石鹸、肌に直接触れるウール、かいたりこすったりすることです。", en: "Try to keep him away from things that irritate the skin — most soaps, wool against the skin, and scratching or rubbing." },
+      { s: "締め", t: 0, jp: "まとめますと、これは湿疹です。していただきたいのは、保湿を続けることと、石鹸やウールが直接肌に触れないようにすることです。4週間後に診せてください。もし皮膚が熱を持つ、じくじくする、かさぶたになるようなら感染のサインですので、すぐに連れてきてください。終わる前に何かご質問はありますか？", en: "So, to summarise — this is eczema, and what I'd like you to do is keep his skin moisturised and avoid soap and wool against the skin. Let's review him in four weeks. If the skin becomes hot, weepy or crusted, that can mean infection — please bring him straight in. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "05", title: "帯状疱疹（風邪の後）", setting: "Suburban general practice",
+    brief: "A 45-year-old with five days of a simple cold noticed a blistering rash over the left fifth rib this morning. It looks like classic shingles; otherwise healthy. Had chickenpox as a child.",
+    tasks: [
+      "Find out about the patient's current symptoms.",
+      "Explain the diagnosis (mild shingles) and probable cause (the cold lowered resistance; dormant chickenpox virus reactivated).",
+      "Suggest treatment for pain (topical cream; paracetamol if severe).",
+      "Find out what will reassure the patient; the rash usually fades over several weeks.",
+      "Reassure: no other illness is implied, and spread is unlikely.",
+      "Advise return if the rash spreads or simple measures don't help.",
+    ],
+    words: "shingles / herpes zoster / varicella-zoster / chickenpox / paracetamol",
+    steps: [
+      { s: "導入", t: 1, jp: "こんにちは、担当医の[名前]です。胸に発疹が出たと伺いました。風邪の具合も含めて、今の症状を教えていただけますか？", en: "Hello, I'm Dr [Name]. I understand you've noticed a rash on your chest — could you tell me about your symptoms, including how the cold is going?" },
+      { s: "問診", t: 1, jp: "発疹はかゆいですか、それとも痛みますか？", en: "Is the rash itchy, or is it more painful?" },
+      { s: "説明", t: 2, jp: "診察したところ、軽い帯状疱疹です。", en: "Having examined you, this is a mild case of shingles." },
+      { s: "説明", t: 2, jp: "帯状疱疹は、子どもの頃にかかった水ぼうそうのウイルスが再び活動を始めて起こります。最近の風邪で体の抵抗力が落ちたことが引き金になったのでしょう。", en: "Shingles happens when the chickenpox virus you had as a child becomes active again — your recent cold lowered your body's resistance, which let it wake up.", n: "患者は「風邪と関係あるのか」を必ず聞く。因果を1文で結ぶ。" },
+      { s: "提案", t: 3, jp: "痛みには塗り薬を使い、痛みが強ければパラセタモールを飲んでください。", en: "For the discomfort, I'd suggest a cream on the rash, and paracetamol if the pain gets bad." },
+      { s: "問診", t: 4, jp: "いちばん気がかりなのはどんなことですか？", en: "What's worrying you most about this?" },
+      { s: "安心", t: 4, jp: "発疹はふつう数週間で自然に消えます。小さくてもつらいものなので、それまで症状はきちんと抑えましょう。", en: "The rash usually fades by itself over a few weeks — though even a small patch can be uncomfortable, so we'll keep you comfortable in the meantime." },
+      { s: "安心", t: 5, jp: "これは他の病気があるという意味ではありませんし、全身に広がることもまずありません。", en: "This doesn't mean there's anything else wrong with you, and it's very unlikely to spread all over your body.", n: "患者は繰り返し保証を求める設定。2回目は言い換えて返す。" },
+      { s: "締め", t: 6, jp: "まとめますと、これは軽い帯状疱疹で、していただきたいのはクリームを塗ること、痛みが強ければパラセタモールを飲むことです。発疹は数週間かけて自然に薄くなります。もし発疹が広がってきたり、この方法で抑えられないようなら、すぐに受診してください。終わる前に何かご質問はありますか？", en: "So, to summarise — this is a mild case of shingles, and what I'd like you to do is apply the cream and take paracetamol if the pain gets bad. The rash should fade by itself over the next few weeks. If the rash starts to spread, or if these simple measures aren't controlling it, please come straight back to me. Do you have any other questions before we finish?", n: "Task6がそのまま safety net＝4パーツが自然に揃うカード。" },
+    ] },
+
+  { id: "06", title: "2歳児の食欲不振", setting: "Suburban general practice",
+    brief: "A parent is worried about their two-year-old son's poor appetite. He is well, active, and his weight and height are normal for his age. The parent is anxious and not easily reassured.",
+    tasks: [
+      "Find out about the child's eating behaviour and diet (fruit, vegetables, meat, drinks).",
+      "Explain that he is healthy and a normal weight and height for his age.",
+      "Explain that food refusal is common at this age and he needs less food when not growing rapidly.",
+      "Discuss his milk and sugary drinks and suggest cutting down (tooth decay, obesity, reduced appetite).",
+      "Offer to review and re-measure him in four weeks.",
+    ],
+    words: "appetite / picky eater / sugary drinks / tooth decay / re-measure",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。息子さんの食欲のことでご心配だと伺いました。", en: "Hello, I'm Dr [Name]. I understand you're worried about your son's appetite." },
+      { s: "問診", t: 1, jp: "普段、1日にどんなものを食べたり飲んだりしていますか？ 果物や野菜、お肉、飲み物などを教えてください。", en: "Could you tell me what he usually eats and drinks in a day — fruit, vegetables, meat, and what he drinks?" },
+      { s: "共感", t: 1, jp: "こうした質問をするのは、お子さんに一番良い助言をするためです。よろしいですか？", en: "I ask these because they help me give you the best advice — is that okay?", n: "前回は母親の \"Why?\" を無視して進め、Relationship building を落とした。" },
+      { s: "安心", t: 2, jp: "診察したところ、息子さんはとても元気で、身長も体重も年齢相応です。", en: "Having examined him, he looks perfectly healthy, and his weight and height are normal for his age." },
+      { s: "安心", t: 2, jp: "今のところ検査は必要ありません。成長も発達も順調で、病気を疑うサインがないからです。", en: "He doesn't need any tests at the moment, because he's growing and developing normally, and there are no warning signs of illness.", n: "患者は「検査は要らないのか」と聞く設定。1-C：まず1文で答えて理由を続ける。" },
+      { s: "安心", t: 3, jp: "この年齢で食べたがらないのはとてもよくあることです。急に成長する時期ではないので、必要な量自体が少ないのです。", en: "Food refusal is very common at this age — he needs less food right now because he isn't in a phase of rapid growth." },
+      { s: "提案", t: 4, jp: "牛乳や甘い飲み物でお腹がいっぱいになると、食事を食べなくなります。虫歯や肥満の原因にもなるので、減らしてみませんか？", en: "Milk and sugary drinks fill him up, so he's less hungry at mealtimes — and they can also cause tooth decay and weight problems. How about we cut them down?" },
+      { s: "安心", t: 4, jp: "いいえ、そうはなりません。甘い飲み物を減らしても食べなくなることはなく、むしろ糖分でお腹が満たされない分、よく食べるようになる子がほとんどです。", en: "No, that won't happen — children don't stop eating when you cut the sweet drinks. In fact most eat more, because they're not filling up on sugar.", n: "1-C：直接質問にまず1文で答える。前回はここで無応答のまま終了（S=1）。" },
+      { s: "締め", t: 5, jp: "まとめますと、息子さんの身長も体重も年齢相応でまったく正常です。していただきたいのは、食事の間の甘い飲み物と牛乳を減らすことです。4週間後にもう一度測りましょう。もし体重が減ってきたり、まったく食べなくなったら、それより早く連れてきてください。終わる前に何かご質問はありますか？", en: "So, to summarise — he's a perfectly normal weight and height for his age, and what I'd like you to do is cut back the sugary drinks and milk between meals. Let's re-measure him in four weeks. If he starts losing weight, or goes off his food completely, please bring him in sooner. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "07", title: "ベトナム渡航前の予防接種", setting: "General practitioner clinic",
+    brief: "Mr Maxwell Tusk, 42, is visiting Vietnam next month. Advise him on the WHO-recommended travel vaccinations.",
+    tasks: [
+      "Ask how long he will be travelling.",
+      "Find out his vaccination history.",
+      "Explain the need for typhoid and hepatitis A vaccines (medium-risk country; what each disease is).",
+      "If asked, assure him the injections are only mildly painful.",
+      "Explain why vaccines should be given at least two weeks before travel (time to build immunity).",
+    ],
+    words: "typhoid / hepatitis A / vaccination / immunity / contagious",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、タスクさん。[名前]です。来月ベトナムへ行かれるので、予防接種のご相談と伺いました。", en: "Hello, Mr Tusk, I'm Dr [Name]. I understand you're travelling to Vietnam next month and would like some advice about vaccinations." },
+      { s: "問診", t: 1, jp: "どのくらいの期間滞在されますか？", en: "How long will you be staying in Vietnam?" },
+      { s: "問診", t: 2, jp: "これまでに受けた予防接種を教えていただけますか？ 腸チフスやA型肝炎のワクチンを受けたことはありますか？", en: "Could you tell me which vaccinations you've had in the past? Have you ever had the typhoid or hepatitis A vaccine?" },
+      { s: "提案", t: 3, jp: "ベトナムは中程度のリスクの国なので、出発前に腸チフスとA型肝炎の予防接種をお勧めします。", en: "Vietnam is a medium-risk country, so I'd recommend vaccinations against typhoid and hepatitis A before you go." },
+      { s: "説明", t: 3, jp: "腸チフスは細菌による病気で、発熱、だるさ、腹痛、嘔吐を起こします。A型肝炎はウイルスで肝臓に炎症を起こし、疲れや吐き気が出ます。どちらもうつりやすいですが、ワクチンで防げます。", en: "Typhoid is a bacterial infection that causes fever, weakness, stomach pain and vomiting. Hepatitis A is a virus that inflames the liver and makes you tired and sick. Both spread easily, but both can be prevented with a vaccine." },
+      { s: "安心", t: 4, jp: "注射の痛みはほんの少しで、十分我慢できる程度です。", en: "The injections only hurt a little — most people find them very easy to tolerate." },
+      { s: "説明", t: 5, jp: "免疫ができるまで2週間以上かかるので、出発の少なくとも2週間前までに接種してください。", en: "It takes more than two weeks for your body to build up protection, so you'll need to have them at least two weeks before you travel." },
+      { s: "締め", t: 0, jp: "まとめますと、腸チフスとA型肝炎のワクチンをお勧めします。していただきたいのは、出発の2週間以上前に接種を済ませることです。今日予約をお取りしましょう。もし旅行中や帰国後に高熱、下痢、皮膚や目が黄色くなるなどがあれば、すぐに受診してください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — I recommend the typhoid and hepatitis A vaccines, and what I'd like you to do is have them at least two weeks before you leave. Let's book them in today. If you get a high fever, diarrhoea, or yellowing of your skin or eyes during or after your trip, please see a doctor straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "08", title: "体重管理と息切れ", setting: "Community health centre",
+    brief: "A 39-year-old police officer is overweight (BMI 25.9) and gets breathless on exertion.",
+    tasks: [
+      "Ask about lifestyle (drinking, eating habits and exercise).",
+      "Explain why losing weight matters (causes the symptoms; risk of heart attack, stroke, diabetes).",
+      "Emphasise physical activity and a balanced diet.",
+      "Encourage leafy vegetables and whole fruits.",
+      "Explain the need to avoid junk food, sugary food and alcohol.",
+    ],
+    words: "breathlessness / BMI / leafy vegetables / junk food / heart attack / stroke / diabetes",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。動いたときに息切れがすると伺いました。", en: "Hello, I'm Dr [Name]. I understand you've been getting breathless when you exert yourself." },
+      { s: "問診", t: 1, jp: "普段の食事やお酒、運動について教えていただけますか？", en: "Could you tell me a bit about your usual diet, how much you drink, and how much exercise you get?" },
+      { s: "説明", t: 2, jp: "息切れの原因は体重そのものです。そして長い目で見ると、心臓発作・脳卒中・糖尿病のリスクも上がります。", en: "Being overweight is what's causing the breathlessness, and over time it also raises your risk of heart attack, stroke and diabetes." },
+      { s: "説明", t: 3, jp: "体重を落とすには、体を動かすことと、バランスの良い食事の両方が大切です。", en: "To lose weight, both regular physical activity and a well-balanced diet are important." },
+      { s: "提案", t: 4, jp: "キャベツやブロッコリー、ほうれん草などの葉物野菜と、りんごやベリーなどの果物を増やしてみてください。", en: "I'd suggest eating more leafy vegetables like cabbage, broccoli and spinach, and whole fruits like apples and berries." },
+      { s: "提案", t: 5, jp: "ジャンクフードや甘いもの、お酒は体重が増える原因になるので、控えましょう。", en: "Junk food, sugary foods and alcohol all add to your weight, so it's best to cut down on them." },
+      { s: "共感", t: 5, jp: "全部を一度に変えるのではなく、まず週に1回の夕食だけから始めてみませんか？", en: "Rather than changing everything at once — how about we start with just one dinner a week?", n: "前回◎だった型。患者は「生活を変えるのは大変」と渋る設定。要求を小さく割る。" },
+      { s: "締め", t: 0, jp: "まとめますと、息切れは体重から来ていて、していただきたいのは週に1回、外食の夕食を野菜のある家庭料理に替えることです。4週間後に体重を見直しましょう。もし安静にしていても息切れが出たり、夜間に出るようなら、それより早く受診してください。終わる前に何かご質問はありますか？", en: "So, to summarise — your breathlessness is coming from your weight, and what I'd like you to do is swap one fast-food dinner a week for a home-cooked meal with vegetables. Let's review your weight in four weeks. If you find yourself getting breathless even at rest, or at night, please come back sooner. Do you have any other questions before we finish?", n: "前回の失点はここ＝合意の直後に要約もフォロー日程もなく終了。" },
+    ] },
+
+  { id: "09", title: "インスリン自己注射の指導", setting: "Patient's home",
+    brief: "You are visiting Mrs Bertha Campbell at home to teach her to inject insulin. She is worried and believes diet and tablets are controlling her diabetes well enough.",
+    tasks: [
+      "Respond kindly and empathetically to her concerns.",
+      "Explain why insulin is necessary (not enough insulin, or can't use it; insulin moves glucose into cells; diet and tablets aren't enough).",
+      "Explain the injection steps (remove cap, clean site — abdomen, buttock or thigh — insert needle, press button, remove and dispose). Reassure if anxious.",
+      "Emphasise sterile needles and safe disposal.",
+    ],
+    words: "insulin / glucose / injection site / abdomen / thigh / sterile / sharps container",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、キャンベルさん。地域保健センターの医師の[名前]です。今日はインスリン注射のやり方を一緒に練習しに来ました。", en: "Hello, Mrs Campbell. I'm Dr [Name] from the community health centre. I've come today to go through how to give your insulin injections." },
+      { s: "問診", t: 1, jp: "始める前に、インスリンを始めることについてどう感じていらっしゃるか伺ってもいいですか？", en: "Before we start, can I ask how you feel about starting insulin?" },
+      { s: "共感", t: 1, jp: "食事と飲み薬でずっと頑張ってこられたのに、注射と言われると戸惑いますよね。", en: "You've worked really hard with your diet and tablets, so I can understand why this feels like a surprise." },
+      { s: "説明", t: 2, jp: "糖尿病では、インスリンが足りないか、うまく働きません。インスリンは血液中の糖を細胞に運んでエネルギーにする役目があります。今は食事と飲み薬だけでは血糖を抑えきれなくなっています。", en: "In diabetes, the body either doesn't make enough insulin or can't use it properly. Insulin moves sugar from your blood into your cells for energy. At the moment, diet and tablets alone aren't keeping your sugar under control." },
+      { s: "説明", t: 3, jp: "まずキャップを外し、お腹・お尻・太ももなど打つ場所を消毒します。針を皮膚に刺してボタンを押し、針を抜いて捨てます。", en: "First, take the cap off and clean the injection site — your tummy, bottom or thigh. Then put the needle into the skin, press the button, and remove the needle and throw it away." },
+      { s: "安心", t: 3, jp: "最初は不安かもしれませんが、とても簡単で、数回で慣れますよ。", en: "It may feel daunting at first, but it's really very simple, and most people get used to it within a few goes." },
+      { s: "提案", t: 4, jp: "針は毎回新しい清潔なものを使い、使った針は専用の容器に捨ててください。感染やけがを防ぐためです。", en: "Please use a new, sterile needle every time, and put used needles in a special sharps container — that prevents infection and injury." },
+      { s: "締め", t: 0, jp: "まとめますと、血糖を抑えるためにインスリンが必要になりました。していただきたいのは、今日練習したとおりに毎日注射することです。来週もう一度伺って、一緒に確認しましょう。もし震え、汗、ふらつき、混乱が出たら低血糖のサインなので、すぐに甘いものをとって、私たちに連絡してください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — you now need insulin to keep your sugar under control, and what I'd like you to do is give your injection each day, just as we practised. I'll visit again next week to check how you're getting on. If you feel shaky, sweaty, dizzy or confused, that may be low blood sugar — have something sugary straight away and give us a call. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "10", title: "睡眠時無呼吸とCPAP", setting: "General practitioner clinic",
+    brief: "Mr Edmond Whitely, 43, started snoring after a nose injury in a car accident six months ago.",
+    tasks: [
+      "Find out his concerns.",
+      "Explain sleep apnoea (airway narrows or blocks in sleep; likely from the nose injury; daytime tiredness, poor concentration, falling asleep).",
+      "Explain how a CPAP mask works (steady air pressure keeps the airway open).",
+      "Explain how to use it (fit over nose and mouth, connect to the machine, switch on).",
+      "Ask him to limit or stop alcohol.",
+    ],
+    words: "sleep apnoea / airway / CPAP / continuous positive airway pressure / mask",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、ホワイトリーさん。[名前]です。事故で鼻をけがされてから、いびきをかくようになったと伺いました。", en: "Hello, Mr Whitely, I'm Dr [Name]. I understand you've started snoring since you injured your nose in the accident." },
+      { s: "問診", t: 1, jp: "いちばん気になっていることは何ですか？ 日中の眠気や疲れはありますか？", en: "What's concerning you most about this? Do you feel tired or sleepy during the day?" },
+      { s: "説明", t: 2, jp: "睡眠時無呼吸症候群の可能性が高いです。眠っている間に空気の通り道が狭くなったりふさがったりして、呼吸が短い間止まってしまう状態です。", en: "It sounds like you have sleep apnoea. That's when your airway becomes narrowed or blocked while you sleep, so your breathing stops for short periods.", n: "前回 CPAP を \"sleep apnea\" と3回取り違えた。病名と機械名を分けて言う。" },
+      { s: "説明", t: 2, jp: "鼻のけがが原因と考えられます。日中の疲れや集中力の低下、居眠りにつながるので、治療が必要です。", en: "It's most likely caused by the injury to your nose. It can make you tired, affect your concentration, and even make you fall asleep during the day, so it does need treating." },
+      { s: "説明", t: 3, jp: "CPAPという機械を使います。眠っている間、マスクから一定の圧で空気を送り、気道を開いたままにします。", en: "The treatment is a CPAP machine. It gives a steady flow of air through a mask while you sleep, which keeps your airway open." },
+      { s: "説明", t: 4, jp: "マスクを鼻と口に着けて、チューブで機械につなぎ、スイッチを入れるだけです。", en: "You simply fit the mask over your nose and mouth, connect it to the machine, and switch it on." },
+      { s: "提案", t: 5, jp: "お酒は喉の筋肉をゆるめて症状を悪化させるので、量を控えるか、できればやめてください。", en: "Alcohol relaxes the muscles in your throat and makes this worse, so I'd advise cutting down, or ideally stopping altogether." },
+      { s: "締め", t: 0, jp: "まとめますと、鼻のけがによる睡眠時無呼吸症候群です。していただきたいのは、毎晩CPAPを使い、お酒を控えることです。1か月後に見直しましょう。もし運転中に眠気を感じたら運転をやめ、胸の痛みや強い息苦しさがあればすぐに受診してください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — you have sleep apnoea, most likely from your nose injury, and what I'd like you to do is use the CPAP machine every night and cut down on alcohol. Let's review this in a month. If you feel sleepy while driving, please stop driving, and if you get chest pain or severe breathlessness, come in straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "11", title: "切迫性尿失禁", setting: "Hospital outpatient clinic",
+    brief: "Mrs Heather Calder, 73, has come for a check-up and looks embarrassed to talk.",
+    tasks: [
+      "Find out about her condition; be empathetic if she is embarrassed.",
+      "Ask how she has been coping so far.",
+      "Describe the preliminary diagnosis: urge incontinence (overactive bladder; sudden, strong need to urinate).",
+      "Explain it is very common in older people, especially women who have given birth (weaker muscles with age).",
+      "Assure her it can be controlled (Kegel exercises, bladder training, medication).",
+      "Ask what she wants to do next (urologist appointment, pads or disposable underwear).",
+    ],
+    words: "urge incontinence / overactive bladder / Kegel exercises / bladder training / urologist / pads",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、カルダーさん。[名前]です。今日はどのようなことでいらっしゃいましたか？ ゆっくりで大丈夫ですよ。", en: "Hello, Mrs Calder, I'm Dr [Name]. What's brought you in today? Take your time." },
+      { s: "共感", t: 1, jp: "お話ししにくいことですよね。でも思っているよりずっとよくあることですし、来てくださって本当によかったです。", en: "I can see this isn't easy to talk about — it's much more common than you might think, and you did the right thing coming in.", n: "前回 \"That's very embarrassing\" と負の感情語を反射した。" },
+      { s: "問診", t: 1, jp: "どんなときに漏れてしまいますか？ 急に強い尿意が来て、トイレに間に合わない感じですか？", en: "Can you tell me when the leaking happens? Is it a sudden, strong urge, and you can't get to the toilet in time?" },
+      { s: "問診", t: 2, jp: "これまで、どうやってやりくりされてきましたか？", en: "How have you been managing with this so far?" },
+      { s: "説明", t: [3, 4], jp: "これは切迫性尿失禁、いわゆる過活動膀胱です。急に強い尿意が来る状態です。年齢とともに骨盤の筋肉が弱くなるので、特に出産経験のある高齢の女性にとても多いんです。", en: "This is called urge incontinence, or an overactive bladder — it causes a sudden, strong need to pass urine. It's very common in older women, especially those who've had children, because the pelvic muscles get weaker with age.", n: "Task3（診断）とTask4（頻度）を1回で。" },
+      { s: "安心", t: 5, jp: "はい、十分コントロールできます。ケーゲル体操という骨盤底筋の運動、膀胱訓練、必要ならお薬で良くなります。", en: "Yes — it can be very well controlled with pelvic floor exercises called Kegel exercises, bladder training and, if needed, medication." },
+      { s: "提案", t: 6, jp: "泌尿器科の予約をお取りしましょうか？ それとも当面、パッドがあると助かりますか？", en: "Would you like me to refer you to a urologist, or would some pads help in the meantime?" },
+      { s: "締め", t: 0, jp: "まとめますと、過活動膀胱です。していただきたいのは、毎日ケーゲル体操と膀胱訓練をすることです。6週間後に見直しましょう。もし排尿時の痛みや焼ける感じ、尿に血が混じったら、すぐに来てください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — you have an overactive bladder, and what I'd like you to do is start the Kegel exercises and bladder training every day. Let's review this in six weeks. If you notice pain or burning when you pass urine, or blood in your urine, please come back straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "12", title: "壊血病（15歳）", setting: "General practitioner's clinic",
+    brief: "Ken, 15, comes in about bruises on his legs and red spots all over his body.",
+    tasks: [
+      "Ask about his concerns and what he has done so far.",
+      "Explain the diagnosis, scurvy (lack of vitamin C; bleeding gums, easy bruising, tiredness, rashes) and why vitamin C matters (growth and tissue repair).",
+      "Encourage fruit and vegetables (especially citrus and leafy salads).",
+      "Ask him to come back for review in one week.",
+    ],
+    words: "scurvy / vitamin C / bruising / bleeding gums / citrus fruits / absorb",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、ケン君。[名前]です。足のあざと体の赤い点のことで来たんだね。", en: "Hi Ken, I'm Dr [Name]. I understand you've come in about the bruises on your legs and the red spots on your body." },
+      { s: "問診", t: 1, jp: "いちばん心配なのはどんなこと？ これまでに何か自分でやってみたことはある？", en: "What's worrying you most about it? And have you tried anything to deal with it so far?" },
+      { s: "問診", t: 1, jp: "普段どんなものを食べている？ 果物や野菜はよく食べるかな？", en: "What do you usually eat? Do you have much fruit or vegetables?" },
+      { s: "説明", t: 2, jp: "壊血病という病気だと思います。ビタミンCが足りないと起こり、歯ぐきからの出血、あざができやすい、疲れやすい、発疹などが出ます。", en: "I think this is a condition called scurvy. It happens when you don't get enough vitamin C, and it causes bleeding gums, easy bruising, tiredness and rashes.", n: "前回 scurvy を \"scabies\" と2回取り違えた。紙に書く。" },
+      { s: "説明", t: 2, jp: "ビタミンCは、成長や体の組織の修復など、体のいろいろな働きに欠かせません。", en: "Vitamin C is really important for lots of things in the body, including growth and repairing tissue." },
+      { s: "提案", t: 3, jp: "オレンジなどの柑橘類や葉物野菜のサラダをたくさん食べてね。ビタミンCと、その吸収を助ける他のビタミンもとれるよ。", en: "I'd like you to eat plenty of fruit and vegetables — especially citrus fruits like oranges, and green leafy salads. They contain vitamin C, plus other vitamins that help your body absorb it." },
+      { s: "締め", t: 4, jp: "まとめると、ビタミンC不足による壊血病です。してほしいのは、毎日果物と野菜をしっかり食べることです。1週間後にもう一度診せてね。もし歯ぐきの出血が止まらない、あざが増える、とても疲れるようなら、それより早く来てください。終わる前に、何か他に質問はある？", en: "So, to summarise — this is scurvy, caused by a lack of vitamin C, and what I'd like you to do is eat plenty of fruit and vegetables every day. Let's review you in one week. If your gums keep bleeding, the bruises get worse, or you feel very tired, please come back sooner. Do you have any other questions before we finish?", n: "RP12は11本中最良の締めだったが safety net と最終質問が欠落。" },
+    ] },
+
+  { id: "13", title: "片頭痛・怒る夫", setting: "Emergency department",
+    brief: "The patient's husband is frustrated and thinks his wife isn't being cared for. She has a severe migraine and has already had strong painkillers. You closed her door to keep her calm, which may have confused him.",
+    tasks: [
+      "Calm the husband: empathise and reassure him she is getting appropriate treatment.",
+      "Find out his concerns.",
+      "Explain she has a migraine only, with no other serious disease.",
+      "Explain why no more painkillers can be given (already had strong ones; side effects; wait about 30 minutes).",
+      "Explain the door was closed to keep the room dark and quiet (light and noise worsen migraine).",
+    ],
+    words: "migraine / painkillers / side effects / thirty minutes / dark and quiet",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、アニーさんの担当医の[名前]です。ご主人でいらっしゃいますね。", en: "Hello, I'm Dr [Name], the doctor looking after Annie. You must be her husband." },
+      { s: "共感", t: 1, jp: "長くお待たせして本当に申し訳ありません。お怒りになるのはもっともですし、そうお感じになる権利があります。", en: "I'm so sorry you've had such a long wait. I can see why you're upset, and you have every right to be.", n: "怒りを先に承認する。統計や説明から入らない（RP21の失点）。" },
+      { s: "安心", t: 1, jp: "奥さまには適切な治療をしっかり行っていますので、ご安心ください。", en: "I want to reassure you that your wife is getting the right treatment." },
+      { s: "問診", t: 2, jp: "今いちばん気がかりなのは何か、伺ってもいいですか？", en: "Can I ask what's worrying you most right now?" },
+      { s: "安心", t: 3, jp: "奥さまは重い片頭痛です。それ以上に深刻な病気の兆候はありません。", en: "Your wife has a severe migraine — there's no sign of anything more serious." },
+      { s: "説明", t: 4, jp: "今これ以上痛み止めを出せないのは、すでに強い痛み止めを使っていて、さらに増やすと副作用で危険だからです。30分ほどで効いてくるはずです。", en: "The reason I can't give her more painkillers just now is that we've already given her a strong dose, and more could cause harmful side effects. It should start working within about thirty minutes.", n: "1-B：断るときは必ず理由をつける。" },
+      { s: "説明", t: 5, jp: "どうぞ奥さまのそばにいてください。ドアを閉めたのは、光と音で片頭痛が悪化するので、部屋を暗く静かにするためです。", en: "You're very welcome to stay with her — we closed the door to keep the room dark and quiet, because light and noise can make a migraine worse.", n: "前回 \"Please don't disturb her\" と言ってしまった。歓迎→理由の順。" },
+      { s: "締め", t: 0, jp: "まとめますと、アニーさんは重い片頭痛で、すでに強い痛み止めを使っていて30分ほどで効くはずです。30分後にまた様子を見に来ます。もし痛みがさらに強くなったり、手足の力が入らない、混乱している、吐くといった様子があれば、すぐに看護師を呼んでください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — Annie has a severe migraine, and she's already had strong pain relief, which should work within thirty minutes. I'll come back and check on her in half an hour. If her pain gets worse, or she has any weakness, confusion or vomiting, please call a nurse straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "14", title: "小児脳腫瘍の告知", setting: "Surgical ward",
+    brief: "Mr Richard Parker is the single father of Fiona, 5, admitted last night with a week of headaches and vomiting. An MRI shows a tumour at the back of her brain; surgery is planned. You must break the news. He is shocked and distressed.",
+    tasks: [
+      "Explain the diagnosis: brain tumour needing surgery; the surgery is safe and she will be sedated.",
+      "Assure him the tumour is benign (won't spread) and unlikely to recur.",
+      "Reassure him she should recover completely.",
+      "Explain the need for follow-up after discharge (to confirm complete removal).",
+      "Suggest physio, speech or occupational therapy to speed recovery.",
+      "Address his self-blame (not his fault) and offer help finding a carers' support group.",
+    ],
+    words: "tumour / benign / sedated / follow-up / speech therapy / occupational therapy / support group",
+    steps: [
+      { s: "導入", t: 0, jp: "パーカーさん、フィオナちゃんを担当している医師の[名前]です。どうぞおかけください。", en: "Mr Parker, I'm Dr [Name], one of the doctors looking after Fiona. Please, have a seat." },
+      { s: "説明", t: 1, jp: "パーカーさん、残念ながらMRIで大切なお話をしなければならないことが見つかりました。今お話ししてもよろしいですか？", en: "Mr Parker, I'm afraid the MRI scan has shown something serious that we need to talk about. Is now a good time?", n: "前回は警告射撃なしで即告知。" },
+      { s: "説明", t: 2, jp: "MRIで、フィオナちゃんの脳の後ろ側に腫瘍が見つかりました。良い知らせは、それが良性だということです。つまり体の他の部分に広がることはありません。", en: "The scan has shown a tumour at the back of Fiona's brain. The good news is that it's benign — that means it won't spread to other parts of her body." },
+      { s: "共感", t: 0, jp: "ちょっとしたことだと思っていらしたのに、大変なショックですよね。ゆっくりで大丈夫です。", en: "I can see this has come as a huge shock — you were expecting something minor. Take your time.", n: "前回は告知直後に \"It's very rare to find a brain tumor\"。沈黙を待つ。" },
+      { s: "説明", t: [1, 3], jp: "手術はとても安全で、フィオナちゃんは眠っている間に終わるので痛みはありません。完全に回復すると考えています。", en: "The surgery is very safe, and Fiona will be asleep the whole time, so she won't feel any pain. We expect her to recover completely.", n: "Task1（安全・鎮静）とTask3（完全回復）を1回で。" },
+      { s: "安心", t: 2, jp: "再発する可能性も低いと考えています。", en: "It's also very unlikely to come back." },
+      { s: "説明", t: 4, jp: "退院後も、腫瘍がすべて取れたかを確認するため、定期的に外来で診せていただきます。", en: "After she goes home, we'll see her regularly in clinic to make sure the tumour has been completely removed." },
+      { s: "提案", t: 5, jp: "回復を早めるために、必要に応じて理学療法、言語療法、作業療法もご用意できます。", en: "If she needs it, we can also arrange physiotherapy, speech therapy or occupational therapy to help her recover faster." },
+      { s: "共感", t: 6, jp: "これは決してあなたのせいではありません。あなたが何かをした、しなかったから起きたのではないんです。同じ立場の親御さんの支援グループをご紹介しましょうか？", en: "This is not your fault at all — nothing you did or didn't do caused this. Would it help if I put you in touch with a support group for parents in the same situation?" },
+      { s: "締め", t: 0, jp: "まとめますと、フィオナちゃんの腫瘍は良性で、取り除く手術はとても安全です。退院後は、腫瘍がすべて取れたか確認するために数週間後に外来で診せていただき、必要なら理学療法や言語療法もご用意します。もしご自宅でひどい頭痛や嘔吐、ひどく眠そうな様子があれば、すぐに連れてきてください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — Fiona has a benign tumour, and the surgery to remove it is very safe. After she goes home, we'll see her in clinic in a few weeks to make sure it's all been removed, and arrange physiotherapy or speech therapy if she needs it. If she has a bad headache, vomiting or seems very drowsy at home, please bring her straight back. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "15", title: "膝骨折術後・母親", setting: "Post-operative department",
+    brief: "The mother of Ali Ibrahim, who had knee surgery for a fracture from playing football, comes to see you. Attend patiently to her worries.",
+    tasks: [
+      "Reassure her he is doing well and explain the injury and operation (knee fracture; bones realigned).",
+      "Tell her about safety gear (helmet, pads, knee braces) to prevent injuries.",
+      "Explain his medication (antibiotics and painkillers for five days).",
+      "If asked, advise no vigorous exercise or football until fully recovered.",
+      "Offer a physiotherapy referral (knee bending/straightening, weight-bearing).",
+    ],
+    words: "fracture / realign / antibiotics / physiotherapist / refer / knee brace",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、アリ君の担当医の[名前]です。アリ君のお母さまですね。", en: "Hello, I'm Dr [Name], one of the doctors looking after Ali. You must be his mother." },
+      { s: "問診", t: 0, jp: "今いちばん気がかりなのはどんなことですか？", en: "What's worrying you most at the moment?" },
+      { s: "安心", t: 1, jp: "手術はとてもうまくいきました。アリ君は膝の骨折、つまり骨にひびや割れが入っていて、手術でずれた骨を元の位置に戻しました。", en: "I'm pleased to tell you the surgery went very well. Ali had a fracture — a break in the knee bone — and during the operation we realigned the broken parts." },
+      { s: "説明", t: 3, jp: "抗菌薬は5日間すべて飲み切ることが大切です。途中でやめると感染がぶり返すことがあるからです。痛み止めも5日間です。", en: "It's really important he finishes all five days of the antibiotics, because stopping early can let an infection come back. The painkillers are also for five days.", n: "理由を言う。「飲み切って」だけで終えない。" },
+      { s: "説明", t: 4, jp: "すぐにはまだです。完全に治るまでサッカーは控えてください。ただ、理学療法士が安全に復帰できるよう手伝ってくれます。", en: "Not just yet — he should avoid football until he's fully recovered, but a physiotherapist will help him get back safely.", n: "1-C：聞かれたらまず1文で答える。" },
+      { s: "提案", t: 5, jp: "理学療法士をご紹介できます。膝の曲げ伸ばしや体重をかける練習など、回復を早める運動を教えてくれます。", en: "I can refer him to a physiotherapist, who'll give him exercises like bending and straightening his knee, and help him start putting weight on it.", n: "refer が refine/notify に崩れた（3バッチ連続）。" },
+      { s: "提案", t: 2, jp: "復帰したら、膝パッドや膝のサポーターを着けると次のけがを防げます。", en: "When he goes back, knee pads and a knee brace will help protect him from another injury." },
+      { s: "締め", t: 0, jp: "まとめますと、手術はうまくいってアリ君は順調に回復しています。していただきたいのは、抗菌薬と痛み止めを5日間きちんと飲ませることで、理学療法士にもご紹介します。2週間後に診せてください。もし膝が熱をもったり、赤く腫れたり、痛みが強くなったり、熱が出たりしたら、すぐに連れてきてください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — the operation went well and Ali is recovering nicely, and what I'd like you to do is make sure he finishes all five days of the antibiotics and painkillers, and I'll refer him to a physiotherapist. Let's review him in two weeks. If the knee becomes hot, red, swollen or more painful, or he gets a fever, please bring him straight back. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "16", title: "産後の乳房緊満", setting: "Maternity hospital",
+    brief: "A first-time mother, three days after delivery, is worried about sore, engorged breasts.",
+    tasks: [
+      "Reassure her that engorgement is common after birth as milk comes in, temporary and manageable.",
+      "Advise on breastfeeding (feed often, empty the breasts, alternate sides, massage towards the nipple, warmth before feeds).",
+      "Advise on pain relief (paracetamol, aspirin or ibuprofen; lidocaine cream washed off before feeds).",
+      "Reassure her she can cope well.",
+      "Offer a patient-information leaflet on breastfeeding.",
+    ],
+    words: "engorgement / breastfeeding / nipple / ibuprofen / lidocaine / leaflet / mastitis",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。ご出産おめでとうございます。胸の張りと痛みでお困りだと伺いました。", en: "Hello, I'm Dr [Name] — and congratulations on your baby. I understand your breasts have been feeling sore and swollen." },
+      { s: "問診", t: 0, jp: "いつ頃から張ってきましたか？ 赤みや熱っぽさはありますか？", en: "When did the swelling start? Have you noticed any redness, or felt feverish?" },
+      { s: "安心", t: 1, jp: "これは乳房の張りといって、母乳が作られ始める出産後によく起こるものです。一時的なもので、ちゃんと対処できます。", en: "This is called breast engorgement. It's very common after giving birth, when your body starts producing milk. It's only temporary, and it can be managed." },
+      { s: "提案", t: 2, jp: "授乳はこまめに行い、片方を飲ませたらもう片方も飲ませて、できるだけ空にしてください。", en: "Try to feed often, offering one side and then the other, and try to empty each breast as much as you can." },
+      { s: "提案", t: 2, jp: "授乳の前に温かいタオルやシャワーで温め、胸の上から乳首に向かってマッサージすると、母乳が出やすくなります。", en: "Before a feed, a warm pack or a warm shower, and gently massaging from the top of the breast towards the nipple, will help the milk flow." },
+      { s: "説明", t: 3, jp: "痛みにはパラセタモールやイブプロフェンが使えます。リドカインの塗り薬も使えますが、授乳前には洗い流してください。", en: "For the pain, you can take paracetamol or ibuprofen. A lidocaine cream can also help, but please wash it off before you feed." },
+      { s: "安心", t: 4, jp: "初めてでわからないことばかりですよね。でも、とても上手にできていますよ。", en: "Everything is new for you, I know — but you're doing really well, and you will manage this." },
+      { s: "提案", t: 5, jp: "母乳育児についてのパンフレットをお渡ししますね。", en: "I'll give you a leaflet about breastfeeding to take home.", n: "leaflet が \"refread\" に崩れた。紙に書く。" },
+      { s: "締め", t: 0, jp: "まとめますと、出産後によくある一時的な乳房の張りです。していただきたいのは、こまめに授乳し、温めてマッサージし、痛みには痛み止めを使うことです。数日でよくなるはずなので、また明日様子を伺います。もし胸の一部が赤く熱をもつ、熱が出る、インフルエンザのような症状があれば、乳腺炎の可能性があるのですぐに知らせてください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — this is engorgement, which is very common and temporary, and what I'd like you to do is feed often, use warmth and massage, and take pain relief if you need it. It should settle in a few days, and I'll check on you again tomorrow. If part of your breast becomes red and hot, or you get a fever or flu-like symptoms, that could be mastitis, so please let us know straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "17", title: "BPPV（めまい）", setting: "City general practice",
+    brief: "A 46-year-old woman has had dizziness and vomiting for two days, worse when she looks up or lies in certain positions. She thinks it is food poisoning. You diagnose BPPV.",
+    tasks: [
+      "Tell her the diagnosis: benign paroxysmal positional vertigo (BPPV).",
+      "Explain the cause (tiny inner-ear crystals have moved, upsetting balance).",
+      "Assure her it is not food poisoning.",
+      "Explain the Epley manoeuvre and ask permission to refer her to a physiotherapist.",
+      "Offer medication for the dizziness and vomiting.",
+      "Advise that recovery time varies (days to weeks).",
+    ],
+    words: "benign paroxysmal positional vertigo / inner ear / crystals / Epley manoeuvre / physiotherapist / refer",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。2日前からめまいと吐き気が続いていると伺いました。", en: "Hello, I'm Dr [Name]. I understand you've had dizziness and vomiting for the past two days." },
+      { s: "共感", t: 0, jp: "思うように動けないのは、本当におつらいですよね。", en: "That must be really hard, not being able to do much." },
+      { s: "説明", t: 1, jp: "診察の結果、良性発作性頭位めまい症、BPPVだと思います。", en: "Having examined you, I believe you have benign paroxysmal positional vertigo — BPPV for short." },
+      { s: "説明", t: 2, jp: "耳の奥にある小さな石が、本来の場所からはがれて別の場所に移ってしまい、バランスが崩れてめまいや吐き気が起きるんです。", en: "There are tiny crystals in your inner ear. They've come loose and moved to another part of the ear, which upsets your balance and causes the dizziness and vomiting." },
+      { s: "安心", t: 3, jp: "食中毒ではありません。吐き気はめまいから来ているものです。", en: "This is not food poisoning — the vomiting is coming from the dizziness.", n: "1-G：否定は is not で言い切り、本当の原因を肯定文で続ける。" },
+      { s: "提案", t: 4, jp: "エプリー法という頭の動かし方で、石を元の場所に戻せます。理学療法士をご紹介してもよろしいですか？", en: "The treatment is a series of head movements called the Epley manoeuvre, which moves the crystals back into place. Would it be all right if I referred you to a physiotherapist to help you with it?", n: "Epley が \"pre-maneuver\" に崩れた。紙に書く。" },
+      { s: "提案", t: 5, jp: "めまいと吐き気を和らげるお薬もお出しできます。", en: "I can also give you some medication to ease the dizziness and sickness.", n: "RP17ではこの対症薬をスキップした。" },
+      { s: "説明", t: 6, jp: "回復までの期間は人によって違い、数日から数週間かかります。", en: "Recovery time varies from person to person — it can take anything from a few days to a few weeks." },
+      { s: "締め", t: 0, jp: "まとめますと、耳の石が原因のBPPVで、食中毒ではありません。していただきたいのは、理学療法士とエプリー法を行い、必要に応じてお薬を飲むことです。2週間後に見直しましょう。もしひどい頭痛、ものが二重に見える、ろれつが回らない、手足に力が入らないといった症状が出たら、すぐに救急を受診してください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — you have BPPV, caused by crystals in your inner ear, not food poisoning, and what I'd like you to do is see the physiotherapist for the Epley manoeuvre and take the medication if you need it. Let's review this in two weeks. If you get a severe headache, double vision, slurred speech or weakness in your arms or legs, please go to the emergency department straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "18", title: "半月板術後", setting: "Hospital ward",
+    brief: "A 36-year-old woman fell a week ago, dislocated her right kneecap and tore her meniscus. She had meniscus repair yesterday and is recovering on the ward, anxious about many things.",
+    tasks: [
+      "Ask how she is feeling after the surgery.",
+      "Assure her the surgery went well and she should walk properly again.",
+      "Advise keeping weight off the knee for at least six weeks.",
+      "Explain that thigh muscles can waste if she doesn't exercise regularly.",
+      "Offer a ward physiotherapist for strengthening exercises and walking aids.",
+    ],
+    words: "meniscus / patella / dislocated / weight-bearing / muscle atrophy / physiotherapist / crutches",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。昨日の手術を担当したチームの医師です。", en: "Hello, I'm Dr [Name], one of the doctors from the team that did your operation yesterday." },
+      { s: "問診", t: 1, jp: "手術の後、ご気分はいかがですか？ 痛みはどうですか？", en: "How are you feeling after the surgery? How's the pain?" },
+      { s: "安心", t: 2, jp: "手術はうまくいきました。また普通に歩けるようになりますよ。", en: "The surgery went well, and you should be able to walk normally again." },
+      { s: "提案", t: 3, jp: "治るまで、少なくとも6週間は手術した膝に体重をかけないでください。歩くときも全体重を乗せないようにします。", en: "To let it heal, please keep your weight off that knee for at least six weeks — when you walk, don't put your full weight on it." },
+      { s: "説明", t: 4, jp: "手術したのは膝ですが、運動をしないと太ももの筋肉がやせてしまいます。", en: "Even though the operation was on your knee, the muscles in your thigh can waste away if you don't exercise them regularly." },
+      { s: "提案", t: 5, jp: "病棟に理学療法士を呼んで、筋力トレーニングと松葉杖の使い方を教えてもらいましょうか？", en: "Would you like me to arrange for a physiotherapist to visit you on the ward? They can show you strengthening exercises and how to use crutches." },
+      { s: "締め", t: 0, jp: "まとめますと、手術はうまくいきました。していただきたいのは、6週間は膝に体重をかけず、理学療法士と筋力トレーニングを続けることです。退院前にもう一度確認し、2週間後に外来で診せてください。もし膝が熱をもって赤く腫れる、熱が出る、ふくらはぎが痛んで腫れるようなら、すぐに知らせてください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — the operation went well, and what I'd like you to do is keep your weight off the knee for six weeks and keep up the exercises with the physiotherapist. We'll check on you before you go home, and see you in clinic in two weeks. If the knee becomes hot, red or swollen, you get a fever, or your calf becomes painful and swollen, please let us know straight away. Do you have any other questions before we finish?", n: "RP18は最終質問が先に出て順序が逆転した。最終質問は必ず一番最後。" },
+    ] },
+
+  { id: "19", title: "帯状疱疹（65歳）", setting: "City general practice",
+    brief: "A 65-year-old noticed a small rash on the side of the abdomen two days ago, now spreading in a belt-like band with tiny blisters. You diagnose shingles.",
+    tasks: [
+      "Tell the patient the diagnosis (shingles).",
+      "Explain the cause (varicella-zoster, the chickenpox virus, stayed in the body and has reactivated).",
+      "Explain treatment (antiviral, painkillers, topical cream).",
+      "Explain that shingles itself can't be passed on, but others can catch chickenpox from it.",
+      "Advise precautions (wash hands, cover the rash, avoid people who haven't had chickenpox, pregnant women, small children).",
+      "If asked, explain the shingles vaccine isn't suitable while the patient has the condition.",
+    ],
+    words: "shingles / varicella-zoster / chickenpox / antiviral / reactivated",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。2日前からお腹の横に発疹が出たと伺いました。", en: "Hello, I'm Dr [Name]. I understand you noticed a rash on the side of your tummy two days ago." },
+      { s: "問診", t: 0, jp: "発疹は痛みますか？ 発疹が出る前に、ピリピリした感じはありましたか？", en: "Is the rash painful? Did you notice any tingling or burning before it appeared?" },
+      { s: "説明", t: 1, jp: "診察したところ、帯状疱疹です。", en: "Having examined you, this is shingles.", n: "shingles が \"singles\" に崩れた。紙に書く。" },
+      { s: "説明", t: 2, jp: "水ぼうそうと同じ水痘・帯状疱疹ウイルスが原因です。昔かかった水ぼうそうのウイルスが体に残っていて、それが再び活動を始めたんです。", en: "It's caused by the varicella-zoster virus — the same virus that causes chickenpox. After you had chickenpox, the virus stayed in your body, and now it's become active again.", n: "varicella が \"Viral\" に崩れた。" },
+      { s: "提案", t: 3, jp: "治療は、抗ウイルス薬と痛み止め、それに塗り薬です。", en: "The treatment is an antiviral medicine, painkillers and a cream for the rash." },
+      { s: "説明", t: 4, jp: "帯状疱疹そのものは人にうつりません。ただ、水ぼうそうにかかったことのない人には、水ぼうそうとしてうつることがあります。", en: "You can't pass shingles on to someone else. But someone who has never had chickenpox can catch chickenpox from you." },
+      { s: "提案", t: 5, jp: "こまめに手を洗い、発疹は覆っておいてください。水ぼうそうにかかったことのない人、妊婦さん、小さなお子さんとの接触は避けてください。", en: "So please wash your hands often and keep the rash covered, and avoid contact with anyone who hasn't had chickenpox, pregnant women and young children." },
+      { s: "説明", t: 6, jp: "帯状疱疹のワクチンは、今かかっている方には適していません。治ってから改めてご相談しましょう。", en: "The shingles vaccine isn't suitable while you have the condition — we can talk about it again once you've recovered." },
+      { s: "締め", t: 0, jp: "まとめますと、帯状疱疹です。していただきたいのは、抗ウイルス薬を飲み切り、発疹を覆って、妊婦さんや小さなお子さんとの接触を避けることです。1週間後に見直しましょう。もし発疹が顔や目の近くに広がる、痛みが抑えられない、熱が高いときは、すぐに受診してください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — you have shingles, and what I'd like you to do is finish the antiviral tablets, keep the rash covered, and stay away from pregnant women and young children. Let's review this in a week. If the rash spreads to your face or near your eye, the pain isn't controlled, or you get a high fever, please come back straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "20", title: "守秘義務・夫", setting: "Outside a hospital ward",
+    brief: "Your 29-year-old patient has hepatitis B and is resting on the ward. She has told you her husband is upset and wants a divorce. Today he asks to speak to you privately, out of her hearing.",
+    tasks: [
+      "Express concern about discussing her condition without her present.",
+      "Decline to disclose medical information without her consent.",
+      "Explain the ethical duty of doctor–patient confidentiality.",
+      "Advise him to let you ask her permission before you disclose anything.",
+      "Assure him the hospital is doing all it can for her.",
+    ],
+    words: "confidentiality / consent / disclose / ethical code / permission",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、奥さまの担当医の[名前]です。私にお話があると伺いました。", en: "Hello, I'm Dr [Name], the doctor looking after your wife. I understand you wanted to speak to me." },
+      { s: "問診", t: 0, jp: "今日はどんなことが気がかりでいらっしゃいますか？", en: "What's on your mind today?" },
+      { s: "説明", t: 1, jp: "奥さまのいないところで病状のお話をするのは、少し心配です。", en: "I have to say I'm a little concerned about discussing your wife's condition without her being here." },
+      { s: "説明", t: 2, jp: "申し訳ありませんが、奥さまの同意なしに病状についてお話しすることはできません。", en: "I'm sorry, but I'm not able to share any information about her condition without her consent.", n: "1-B：拒否→理由→代替案。RP20はこの型で20本初の紛争解決エンディング。" },
+      { s: "説明", t: 3, jp: "医師には、患者さんの秘密を守るという倫理上の決まりがあるからです。ご家族であっても同じです。", en: "That's because doctors have to follow a strict code of patient confidentiality — and that applies to family too." },
+      { s: "共感", t: 0, jp: "ご心配なお気持ちはよくわかります。ご家族として知りたいのは当然です。", en: "I can see how worried you are, and it's natural to want to know as her husband." },
+      { s: "提案", t: 4, jp: "よろしければ、私から奥さまに、ご主人にお話ししてよいか確認してみましょうか？", en: "What I can do is ask your wife if she's happy for me to talk to you. Would that be all right?" },
+      { s: "安心", t: 5, jp: "病院としても、奥さまのためにできることはすべて行っていますので、ご安心ください。", en: "I can assure you that we're doing everything we can for your wife." },
+      { s: "締め", t: 0, jp: "まとめますと、奥さまの同意がないまま病状をお話しすることはできませんが、私から奥さまにお話ししてよいか確認します。今日中に確認して、改めてお声がけします。もしその前に心配なことがあれば、病棟の看護師にいつでもおっしゃってください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — I can't discuss your wife's condition without her consent, but what I'll do is ask her whether she's happy for me to speak with you. I'll do that today and come back to you. If anything worries you before then, please speak to the nurses on the ward at any time. Do you have any other questions before we finish?", n: "医学的な safety net が無いカード。「その前に心配があれば看護師へ」で4パーツ目を埋める。" },
+    ] },
+
+  { id: "21", title: "薬Zの回収", setting: "GP clinic",
+    brief: "A 62-year-old regular patient has taken Drug Z for high blood pressure for seven years. Drug Z has just been recalled over a suspected cancer risk. Inform the patient and explain the change of medication.",
+    tasks: [
+      "Ask about the patient's general health recently.",
+      "Inform the patient about the recall of Drug Z.",
+      "Explain you will switch to a new blood pressure drug.",
+      "Reassure that the new drug is not suspected of side effects such as cancer.",
+      "If asked, advise that relying only on natural remedies is dangerous at their age.",
+      "Explain you need to monitor the response to the new drug.",
+      "Schedule a follow-up appointment.",
+    ],
+    words: "recall / Drug Z / blood pressure / side effects / natural remedies / monitor / follow-up",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。お越しいただきありがとうございます。今日は大切なお話があります。", en: "Hello, I'm Dr [Name]. Thank you for coming in — there's something important I need to talk to you about today." },
+      { s: "問診", t: 1, jp: "まず、最近の体調はいかがですか？", en: "First of all, how has your health been lately?" },
+      { s: "説明", t: 2, jp: "7年間飲んでいただいている血圧の薬、薬Zが、がんを起こす疑いがあるとして、保健当局から回収されることになりました。", en: "The blood pressure medicine you've been taking for seven years, Drug Z, has been recalled by the health authorities, because there are concerns it may cause cancer.", n: "Drug Z が \"drug C/D\" に崩れた。紙に書く。" },
+      { s: "共感", t: 0, jp: "長い間飲んできた薬なので、驚かれたし、ご心配ですよね。", en: "I can see this is a shock, especially after taking it for so long — it's completely understandable to be worried.", n: "RP21は怒りを一度も承認せず統計説明のみだった。" },
+      { s: "提案", t: 3, jp: "そこで、新しい血圧の薬に切り替えたいと思います。", en: "So I'd like to switch you to a new medicine for your blood pressure." },
+      { s: "安心", t: 4, jp: "新しい薬には、がんのような副作用の疑いはありません。", en: "The new medicine is not suspected of causing any side effects like cancer." },
+      { s: "説明", t: 5, jp: "残念ですが、お年を考えると自然療法だけに頼るのは危険です。血圧が高いままだと、脳卒中や心臓発作の危険があるからです。", en: "I'm afraid relying only on natural remedies would be dangerous at your age, because high blood pressure can lead to a stroke or heart attack.", n: "1-B：断るときは理由をつける。" },
+      { s: "説明", t: 6, jp: "新しい薬が体に合っているか、しばらく血圧を確認させてください。", en: "I'll need to keep an eye on how your blood pressure responds to the new medicine." },
+      { s: "締め", t: 7, jp: "まとめますと、薬Zは回収されたので、新しい血圧の薬に切り替えます。していただきたいのは、今日から新しい薬を毎日飲むことです。2週間後に血圧を確認しましょう。もしひどい頭痛、めまい、胸の痛み、息苦しさがあれば、すぐに受診してください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — Drug Z has been recalled, so we're switching you to a new blood pressure medicine, and what I'd like you to do is take it every day starting today. Let's check your blood pressure in two weeks. If you get a severe headache, dizziness, chest pain or shortness of breath, please come in straight away. Do you have any other questions before we finish?", n: "Task7（フォロー予約）がそのまま期間パーツ。" },
+    ] },
+
+  { id: "22", title: "高コレステロール", setting: "Suburban general practice",
+    brief: "A 42-year-old regular patient has come for blood test results. His lipid levels have risen sharply since a year ago, putting him at high risk. You recommend medication to reduce his future risk of a heart attack.",
+    tasks: [
+      "Ask about his general health and tell him the results.",
+      "Ask whether there have been any major changes in his life recently.",
+      "Suggest starting medication such as Lipitor or Crestor.",
+      "Explain the benefits of the medication.",
+      "Assure him the condition is manageable.",
+      "Discuss the risks of not taking medication.",
+    ],
+    words: "cholesterol / triglycerides / LDL / Lipitor / Crestor / heart attack / stroke",
+    steps: [
+      { s: "導入", t: 1, jp: "こんにちは、[名前]です。今日は血液検査の結果をお伝えしますね。その前に、最近の体調はいかがですか？", en: "Hello, I'm Dr [Name]. I've got your blood test results today — but first, how have you been feeling lately?" },
+      { s: "説明", t: 1, jp: "中性脂肪とコレステロールの値が高く、1年前の検査から大きく上がっています。そのため、心臓発作のリスクが高いグループに入ります。", en: "Your results show that your triglycerides and cholesterol levels are high — a big rise since your test a year ago. That puts you in the high-risk group for a heart attack." },
+      { s: "問診", t: 2, jp: "この1年で、生活に何か大きな変化はありましたか？", en: "Have there been any major changes in your life over the past year?" },
+      { s: "共感", t: 2, jp: "奥さまを亡くされたなんて、本当におつらかったですね。お話しくださってありがとうございます。", en: "I'm so sorry to hear about your wife — that must have been incredibly hard. Thank you for telling me.", n: "1-E（死別）。RP22は妻の死の開示に \"…for your blood cholesterol level\" と検査値で返した。感情には感情で返す。" },
+      { s: "提案", t: 3, jp: "コレステロールを下げるために、リピトールやクレストールといったお薬を始めることをお勧めします。", en: "I'd recommend starting a medicine to lower your cholesterol, such as Lipitor or Crestor." },
+      { s: "説明", t: 4, jp: "お薬でコレステロールが下がれば、将来の心臓発作や脳卒中のリスクを減らせます。", en: "Bringing your cholesterol down with medication will reduce your risk of a heart attack or stroke in the future." },
+      { s: "安心", t: 5, jp: "これは十分に管理できる状態ですので、ご安心ください。", en: "The good news is that this is a very manageable condition." },
+      { s: "説明", t: 6, jp: "薬を飲まないと、血管に脂肪がたまり続けて、心臓発作や脳卒中を起こす危険が高くなります。", en: "Without treatment, fat can keep building up in your blood vessels, which raises the risk of a heart attack or stroke." },
+      { s: "説明", t: 6, jp: "食事と運動はとても大切なので、ぜひ続けてください。ただ、今の値はかなり高いので、それだけでは十分に下がりません。お薬と組み合わせるのが一番安全です。", en: "Diet and exercise are really important, so please do keep them up. But your levels are quite high now, so on their own they won't bring them down enough — the safest approach is to combine them with medication.", n: "患者は「薬なしで食事と運動で」と必ず聞く設定。1-C：まず答える＋1-B：理由をつける。" },
+      { s: "締め", t: 0, jp: "まとめますと、コレステロールが高く、心臓発作のリスクが上がっています。していただきたいのは、リピトールを毎日飲み始めることです。3か月後に血液検査をして見直しましょう。もし胸の痛みや締めつけ、急な息苦しさがあれば、すぐに救急車を呼んでください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — your cholesterol is high, which raises your risk of a heart attack, and what I'd like you to do is start taking Lipitor every day. Let's repeat your blood test and review this in three months. If you ever get chest pain or tightness, or sudden breathlessness, please call an ambulance straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "23", title: "1型糖尿病・母親", setting: "City centre general practice",
+    brief: "A 12-year-old boy was recently diagnosed with type 1 diabetes. His anxious mother doesn't understand how a child can get diabetes and wants help handling it.",
+    tasks: [
+      "Explain how type 1 differs from type 2 diabetes.",
+      "Assure her the condition is manageable.",
+      "Advise on the importance of insulin injections.",
+      "Explain that insulin can cause hypoglycaemia.",
+      "Advise her to watch for signs of hypoglycaemia (dizziness, fatigue, confusion).",
+      "Suggest what to do if she suspects a hypo.",
+      "Reassure her that her son can lead a normal life.",
+    ],
+    words: "type 1 diabetes / pancreas / insulin / hypoglycaemia / glucose tablets",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。息子さんが1型糖尿病と診断されたと伺いました。", en: "Hello, I'm Dr [Name]. I understand your son has recently been diagnosed with type 1 diabetes." },
+      { s: "共感", t: 0, jp: "突然のことで、さぞご不安でしょう。わからないことは何でも聞いてください。", en: "This must have come as a real shock, and it's completely understandable to feel anxious. Please ask me anything.", n: "RP23は不安な母に \"There is a lot of risk of taking insulin.\" で切断した。" },
+      { s: "説明", t: 1, jp: "1型糖尿病は、すい臓がインスリンをほとんど作れなくなる病気で、子どもにも起こります。生活習慣と関係する2型とは違い、何かをしたせいではありません。", en: "Type 1 diabetes is when the pancreas stops making insulin, and it can happen at any age, including in children. Unlike type 2, which is linked to lifestyle, it's not caused by anything he or you did." },
+      { s: "安心", t: 2, jp: "十分に管理できる病気です。", en: "It's a condition that can be very well managed." },
+      { s: "説明", t: 3, jp: "体がインスリンを作れないので、毎日のインスリン注射が欠かせません。", en: "Because his body can't make insulin, daily insulin injections are essential." },
+      { s: "説明", t: 4, jp: "ただ、インスリンが効きすぎると、血糖が下がりすぎる低血糖になることがあります。", en: "One thing to be aware of is that insulin can sometimes make his blood sugar drop too low — this is called hypoglycaemia." },
+      { s: "説明", t: 5, jp: "めまい、ひどい疲れ、混乱、震えや冷や汗が低血糖のサインです。", en: "The signs to look out for are dizziness, tiredness, confusion, shakiness and sweating." },
+      { s: "提案", t: 6, jp: "低血糖かなと思ったら、すぐにジュースやブドウ糖など甘いものをとらせてください。15分しても良くならない、または意識がはっきりしないときは、救急車を呼んでください。", en: "If you think he's having a hypo, give him something sugary straight away, like juice or glucose tablets. If he doesn't improve within fifteen minutes, or he becomes drowsy or confused, call an ambulance.", n: "⚠️ RP23で糖分投与を飛ばして搬送指示した（臨床的誤り）。まず糖分→改善しなければ救急。" },
+      { s: "安心", t: 7, jp: "きちんと管理すれば、息子さんは学校も運動も、普通の生活を送れますよ。", en: "With good management, your son can lead a completely normal life — school, sport, everything." },
+      { s: "締め", t: 0, jp: "まとめますと、息子さんは1型糖尿病で、毎日のインスリンが必要ですが、十分に管理できます。していただきたいのは、毎日インスリンを打ち、低血糖のサインに気をつけることです。来週、糖尿病の看護師と一緒にもう一度確認しましょう。もし甘いものをとっても良くならない、意識がもうろうとするときは、すぐに救急車を呼んでください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — your son has type 1 diabetes, which needs daily insulin but can be very well managed, and what I'd like you to do is give his insulin every day and watch for the signs of a hypo. Let's go over everything again next week with the diabetes nurse. If he doesn't improve after having something sugary, or he becomes drowsy or confused, call an ambulance straight away. Do you have any other questions before we finish?" },
+    ] },
+
+  { id: "24", title: "咳止めの要求を断る", setting: "City centre general practice",
+    brief: "A 21-year-old student with no signs of a cough asks for cough medicine, insisting they cough badly at night. Examination finds nothing. Another doctor has already refused. This is your first time seeing them.",
+    tasks: [
+      "Ask about the cough and past medical history.",
+      "Decline to prescribe the cough medicine.",
+      "Explain the risk of dependence.",
+      "Tell them to return if symptoms persist.",
+      "Explain the signs of dependence (withdrawal: dizziness, stomach pains, hot sweats, shivers).",
+      "Advise them to come back for help if they think they have these symptoms.",
+    ],
+    words: "cough medicine / prescribe / dependence / withdrawal / hot sweats / shivers",
+    steps: [
+      { s: "導入", t: 0, jp: "こんにちは、[名前]です。今日はどうされましたか？", en: "Hello, I'm Dr [Name]. What can I do for you today?" },
+      { s: "問診", t: 1, jp: "その咳について教えてください。いつからですか？ 痰は出ますか？ 夜だけですか？", en: "Tell me about the cough — when did it start, are you bringing anything up, and is it only at night?" },
+      { s: "問診", t: 1, jp: "これまでに大きな病気をしたことや、定期的に飲んでいる薬はありますか？", en: "Have you had any medical problems in the past, or do you take any regular medication?" },
+      { s: "説明", t: 2, jp: "申し訳ありませんが、今日は咳止めをお出しできません。診察で咳の原因になるものが見つからないからです。", en: "I'm sorry, but I'm not able to prescribe cough medicine today, because I couldn't find anything on examination that's causing a cough.", n: "1-B：拒否→理由。RP24はこの型が全編機能し、6タスク完全消化。" },
+      { s: "説明", t: 3, jp: "咳止めの中には、必要がないのに飲むと依存してしまうものがあります。", en: "Some cough medicines can be habit-forming if they're taken when they're not needed." },
+      { s: "提案", t: 4, jp: "もし咳が続くようなら、また受診してください。そのときにもう一度診察します。", en: "If the cough carries on, please come back and I'll examine you again." },
+      { s: "説明", t: 5, jp: "依存のサインとしては、薬をやめたときのめまい、腹痛、ほてりや寒気などがあります。", en: "The signs of dependence include withdrawal symptoms when you stop — like dizziness, stomach pains, hot sweats and shivers." },
+      { s: "提案", t: 6, jp: "もしそのような症状に心当たりがあれば、遠慮なくまた相談に来てください。お力になります。", en: "If you think you might have any of those symptoms, please come back and talk to me — I'm here to help, not to judge." },
+      { s: "締め", t: 0, jp: "まとめますと、今日の診察では咳の原因が見つからなかったので、咳止めはお出ししません。していただきたいのは、咳がいつ出るか記録しておくことです。2週間たっても続くようなら、また来てください。もし薬をやめたときにめまい、腹痛、汗や震えが出るようなら、すぐにご相談ください。終わる前に、何か他にご質問はありますか？", en: "So, to summarise — I couldn't find a cause for a cough today, so I won't be prescribing cough medicine, and what I'd like you to do is keep a note of when the cough happens. If it's still there in two weeks, please come back and see me. And if you notice dizziness, stomach pains, sweats or shivers when you stop taking a medicine, please come and talk to me straight away. Do you have any other questions before we finish?", n: "RP24で safety net が24本ぶりに初発動した。" },
+    ] },
+];
+
 const LS_KEY = "oet_flashcards_v1";
 
 // Safariプライベートブラウズ・data: URL 等では localStorage へのアクセス自体が
@@ -496,6 +1097,7 @@ const store = {
 };
 let state = {
   category: "all",
+  rp: null,    // ロールプレイ中のカード番号（"05"など）。null＝通常のフレーズ練習
   reviewMode: false,
   order: [],
   index: 0,
@@ -615,7 +1217,23 @@ function filteredCards() {
   return cards;
 }
 
+// ---- 🎭 ロールプレイ ----
+// 画面の並び: 0＝ロールカード、1..N＝セリフ（会話の順）、N+1＝通し確認。
+// 流れを覚えるのが目的なので、シャッフル・要復習の絞り込みはかけない。
+function currentRP() { return state.rp ? ROLEPLAYS.find(r => r.id === state.rp) || null : null; }
+function rpTasks(step) { return [].concat(step.t || []).filter(Boolean); }
+function rpCard(rp, k) {
+  const st = rp.steps[k];
+  return { cat: "🎭Card" + rp.id, jp: st.jp, en: st.en, note: st.n || "", s: st.s, t: st.t };
+}
+
 function rebuildOrder(shuffle = false) {
+  const rp = currentRP();
+  if (rp) {
+    state.order = Array.from({ length: rp.steps.length + 2 }, (_, i) => i);
+    state.index = 0; state.flipped = false;
+    return;
+  }
   const cards = filteredCards();
   state.order = cards.map(c => c._i);
   if (shuffle) {
@@ -630,6 +1248,11 @@ function rebuildOrder(shuffle = false) {
 
 function currentCard() {
   if (state.order.length === 0) return null;
+  const rp = currentRP();
+  if (rp) {
+    const k = state.index - 1;   // ロールカード・通し画面ではセリフなし
+    return k >= 0 && k < rp.steps.length ? rpCard(rp, k) : null;
+  }
   return CARDS[state.order[state.index]];
 }
 
@@ -683,7 +1306,145 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+
+// 通し画面の「通しで聞く」。1文ずつ順に読み上げ、読んでいる行を光らせる。
+let scriptRun = 0;
+function speakScript(lines, onLine) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const run = ++scriptRun;
+  const v = voices.find(x => x.voiceURI === selectedVoiceURI);
+  const rate = parseFloat(document.getElementById("rateSelect").value);
+  const say = (i) => {
+    if (run !== scriptRun) return;
+    onLine(i);
+    if (i >= lines.length) return;
+    const u = new SpeechSynthesisUtterance(lines[i]);
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-GB"; }
+    u.rate = rate;
+    u.onend = () => setTimeout(() => say(i + 1), 450);
+    speechSynthesis.speak(u);
+  };
+  say(0);
+}
+function stopScript() { scriptRun++; if (window.speechSynthesis) speechSynthesis.cancel(); }
+
+function renderFlow(rp) {
+  const rail = document.getElementById("flowRail");
+  if (!rp) { rail.hidden = true; rail.innerHTML = ""; return; }
+  rail.hidden = false;
+  const items = [{ cls: "st-card", label: "📋 カード" }]
+    .concat(rp.steps.map((st, k) => ({ cls: "st-" + st.s, label: `${k + 1} ${st.s}` })))
+    .concat([{ cls: "st-all", label: "📜 通し" }]);
+  rail.innerHTML = items.map((it, i) =>
+    `<button class="${it.cls}${i === state.index ? " now" : i < state.index ? " done" : ""}" data-i="${i}">${it.label}</button>`).join("");
+  rail.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    stopScript(); state.index = +b.dataset.i; state.flipped = false; render();
+  }));
+  const now = rail.querySelector(".now");
+  if (now && now.scrollIntoView) now.scrollIntoView({ block: "nearest", inline: "center" });
+}
+
+function renderRP(rp) {
+  const area = document.getElementById("cardArea");
+  const N = rp.steps.length, i = state.index;
+  renderFlow(rp);
+  document.getElementById("cardCounter").textContent =
+    i === 0 ? `Card${rp.id} ロールカード` : i > N ? `Card${rp.id} 通し確認` : `セリフ ${i} / ${N}`;
+  document.getElementById("progressFill").style.width = `${(i / (N + 1)) * 100}%`;
+  const rpDone = rp.steps.filter((st, k) => state.known[cardKey(rpCard(rp, k))]).length;
+  document.getElementById("statsText").innerHTML =
+    `<span class="known">✓ ${rpDone} / ${N}</span>　<span class="review">⭐ 要復習 ${rp.steps.filter((st, k) => state.review[cardKey(rpCard(rp, k))]).length}</span>`;
+  const flowline = rp.steps.map(st => st.s).filter((s, k, a) => s !== a[k - 1])
+    .map(s => `<span class="chip st-${s}">${s}</span>`).join(" → ");
+
+  if (i === 0) {
+    area.innerHTML = `<div class="rp-panel">
+      <div class="rp-head"><b>ROLE PLAY CARD — DOCTOR</b><span>Card${rp.id}・${esc(rp.title)}</span></div>
+      <dl class="rp-row"><dt>SETTING</dt><dd>${esc(rp.setting)}</dd></dl>
+      <dl class="rp-row"><dt>DOCTOR</dt><dd>${esc(rp.brief)}</dd></dl>
+      <dl class="rp-row"><dt>TASK</dt><dd><ol>${rp.tasks.map(t => `<li>${esc(t)}</li>`).join("")}</ol></dd></dl>
+      <p class="rp-words">✏️ 紙に書く：${esc(rp.words)}</p>
+      <p style="font-size:0.78rem;color:var(--text-sub)">会話の流れ（${N}セリフ）</p>
+      <div class="rp-flowline">${flowline}</div>
+      <div class="rp-actions"><button class="btn primary" id="rpStart">▶ 流れの順に始める</button>
+        <button class="btn" id="rpToAll">📜 通しで見る</button></div>
+    </div>`;
+    document.getElementById("rpStart").addEventListener("click", next);
+    document.getElementById("rpToAll").addEventListener("click", () => { state.index = N + 1; render(); });
+    return;
+  }
+
+  if (i > N) {
+    area.innerHTML = `<div class="rp-panel">
+      <div class="rp-head"><b>📜 通しで確認</b><span>Card${rp.id}・${esc(rp.title)}</span></div>
+      <p style="font-size:0.8rem;color:var(--text-sub);margin-bottom:8px">5分の流れを頭から最後まで。和文を隠して言えるか確認しよう。</p>
+      <ol class="rp-script" id="rpScript">${rp.steps.map((st, k) => `
+        <li data-k="${k}"><span class="chip st-${st.s}">${st.s}</span>
+          <div><div class="en">${esc(st.en)}</div><div class="jp">${esc(st.jp)}</div></div></li>`).join("")}
+      </ol>
+      <div class="rp-actions" style="margin-top:14px">
+        <button class="btn primary" id="rpPlayAll">🔊 通しで聞く</button>
+        <button class="btn" id="rpStop">■ 止める</button>
+        <button class="btn" id="rpHideJp">和文を隠す</button>
+        <button class="btn" id="rpRestart">↺ カードから</button>
+      </div>
+    </div>`;
+    const list = document.getElementById("rpScript");
+    const mark = (k) => list.querySelectorAll("li").forEach(li => {
+      const on = +li.dataset.k === k;
+      li.classList.toggle("speaking", on);
+      if (on && li.scrollIntoView) li.scrollIntoView({ block: "nearest" });
+    });
+    document.getElementById("rpPlayAll").addEventListener("click", () => speakScript(rp.steps.map(st => st.en), mark));
+    document.getElementById("rpStop").addEventListener("click", () => { stopScript(); mark(-1); });
+    document.getElementById("rpHideJp").addEventListener("click", (e) => {
+      const hid = list.classList.toggle("hide-jp");
+      e.target.textContent = hid ? "和文を表示" : "和文を隠す";
+    });
+    document.getElementById("rpRestart").addEventListener("click", () => { stopScript(); state.index = 0; render(); });
+    return;
+  }
+
+  const k = i - 1, st = rp.steps[k], card = rpCard(rp, k);
+  const tasks = rpTasks(st);
+  const taskRef = tasks.length
+    ? tasks.map(n => `<b>Task ${n}</b>　${esc(rp.tasks[n - 1])}`).join("<br>")
+    : (st.s === "締め" ? "<b>締め4パーツ</b>　要約 → 行動 → 期間＋safety net → 最終質問" : "<b>カード外</b>　流れをつくる定型");
+  const prev = k > 0 ? `<p class="prev-line">↑ 直前：${esc(rp.steps[k - 1].en)}</p>` : "";
+  const backAlign = (card.en.length > 90 || card.note) ? " align-left" : "";
+  area.innerHTML = `
+    <div class="card ${state.flipped ? "flipped" : ""}" id="theCard">
+      <div class="card-face card-front align-left st-${st.s}">
+        <span class="stage-tag">${k + 1}. ${st.s}</span>
+        <span class="face-label">Card${rp.id}</span>
+        <div class="task-ref">${taskRef}</div>
+        ${prev}
+        <p class="jp-text">${esc(st.jp)}</p>
+        <p class="hint">クリック or Space で答えを表示</p>
+      </div>
+      <div class="card-face card-back${backAlign} st-${st.s}">
+        <span class="stage-tag">${k + 1}. ${st.s}</span>
+        <span class="face-label">ANSWER</span>
+        <p class="en-text">${esc(st.en)}</p>
+        ${st.n ? `<p class="note">💡 ${esc(st.n)}</p>` : ""}
+        <button class="speak-btn" id="speakBtn">🔊 発音を聞く</button>
+      </div>
+    </div>`;
+  document.getElementById("theCard").addEventListener("click", (e) => {
+    if (e.target.id === "speakBtn") return;
+    flip();
+  });
+  document.getElementById("speakBtn").addEventListener("click", (e) => { e.stopPropagation(); speak(st.en); });
+}
+
 function render() {
+  const rp = currentRP();
+  document.getElementById("shuffleBtn").disabled = !!rp;
+  document.getElementById("reviewModeBtn").disabled = !!rp;
+  if (rp) { renderRP(rp); return; }
+  renderFlow(null);
   const area = document.getElementById("cardArea");
   const card = currentCard();
   const total = state.order.length;
@@ -737,16 +1498,16 @@ function render() {
 // カードをめくる。再描画せずクラスだけ切り替えるのでキー操作でもアニメーションする
 function flip() {
   const el = document.getElementById("theCard");
-  if (!el) return;
+  if (!el) { if (currentRP() && state.index === 0) next(); return; }  // ロールカード画面ではSpaceで開始
   state.flipped = !state.flipped;
   el.classList.toggle("flipped", state.flipped);
 }
 
 function next() {
-  if (state.index < state.order.length - 1) { state.index++; state.flipped = false; render(); }
+  if (state.index < state.order.length - 1) { stopScript(); state.index++; state.flipped = false; render(); }
 }
 function prev() {
-  if (state.index > 0) { state.index--; state.flipped = false; render(); }
+  if (state.index > 0) { stopScript(); state.index--; state.flipped = false; render(); }
 }
 function markKnown() {
   const c = currentCard(); if (!c) return;
@@ -791,10 +1552,22 @@ document.getElementById("voiceSelect").addEventListener("change", (e) => {
 
 const select = document.getElementById("categorySelect");
 const cats = [...new Set(CARDS.map(c => c.cat))];
-select.innerHTML = `<option value="all">すべてのカテゴリ (${CARDS.length})</option>` +
-  cats.map(c => `<option value="${c}">${c} (${CARDS.filter(x => x.cat === c).length})</option>`).join("");
+select.innerHTML =
+  `<optgroup label="フレーズ（カテゴリ別）"><option value="all">すべてのカテゴリ (${CARDS.length})</option>` +
+  cats.map(c => `<option value="${c}">${c} (${CARDS.filter(x => x.cat === c).length})</option>`).join("") +
+  `</optgroup><optgroup label="🎭 ロールプレイ（カード→流れの順）">` +
+  ROLEPLAYS.map(r => `<option value="rp:${r.id}">🎭 Card${r.id} ${r.title}</option>`).join("") + `</optgroup>`;
 
-select.addEventListener("change", () => { state.category = select.value; rebuildOrder(); render(); });
+// 選んだカテゴリ／ロールプレイを次回も開く
+function applySelection(v) {
+  if (v.startsWith("rp:") && ROLEPLAYS.some(r => r.id === v.slice(3))) { state.rp = v.slice(3); state.category = "all"; }
+  else { state.rp = null; state.category = (v === "all" || cats.includes(v)) ? v : "all"; }
+  select.value = state.rp ? "rp:" + state.rp : state.category;
+}
+applySelection(store.get("oet_last_cat") || "all");
+select.addEventListener("change", () => {
+  stopScript(); applySelection(select.value); store.set("oet_last_cat", select.value); rebuildOrder(); render();
+});
 document.getElementById("shuffleBtn").addEventListener("click", () => { rebuildOrder(true); render(); });
 document.getElementById("reviewModeBtn").addEventListener("click", (e) => {
   state.reviewMode = !state.reviewMode;
