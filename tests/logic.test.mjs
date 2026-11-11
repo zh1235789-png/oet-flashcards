@@ -56,8 +56,9 @@ test('voiceScore() は大文字小文字を区別しない', () => {
 
 // ---- filteredCards(): カテゴリ／復習モードの絞り込み ----
 
-test('filteredCards() は既定で全カードを返す', () => {
+test('filteredCards() は「すべて」で全カードを返す', () => {
   const a = app();
+  a.$('state.category = "all"');
   assert.equal(a.filteredCards().length, a.$('CARDS').length);
 });
 
@@ -73,6 +74,7 @@ test('filteredCards() はカテゴリで絞る', () => {
 test('filteredCards() は復習モードで印をつけたカードだけ返す', () => {
   const a = app();
   const first = norm(a.$('CARDS'))[0];
+  a.$('state.category = "all"');
   a.$('state.reviewMode = true');
   assert.deepEqual(norm(a.filteredCards()), [], '印がないのに復習カードが出た');
   a.$(`state.review[${JSON.stringify(a.cardKey(first))}] = true`);
@@ -83,6 +85,7 @@ test('filteredCards() は復習モードで印をつけたカードだけ返す'
 
 test('filteredCards() は元の並び順の添字 _i を保つ', () => {
   const a = app();
+  a.$('state.category = "all"');
   const cards = norm(a.filteredCards());
   assert.deepEqual(cards.map(c => c._i).slice(0, 5), [0, 1, 2, 3, 4]);
 });

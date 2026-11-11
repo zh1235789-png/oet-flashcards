@@ -73,6 +73,19 @@
     font-size: 0.78rem;
     line-height: 1.6;
   }
+  .daily-bar {
+    width: 100%; max-width: 640px; margin-bottom: 12px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    border-radius: 12px; background: #e0f2f1; color: var(--primary-dark); font-size: 0.85rem;
+  }
+  .daily-bar b { font-size: 0.95rem; }
+  .daily-bar .sub { color: var(--text-sub); font-size: 0.78rem; }
+  .daily-bar .btn { margin-left: auto; padding: 6px 12px; }
+  .daily-bar.done { background: #dcfce7; color: #166534; }
+  .carry-tag {
+    display: inline-block; margin-bottom: 10px; font-size: 0.7rem; font-weight: 600;
+    background: #fef3c7; color: #92400e; padding: 3px 9px; border-radius: 999px;
+  }
   .progress-wrap {
     width: 100%;
     max-width: 640px;
@@ -336,6 +349,8 @@
 </div>
 
 <div class="sync-panel" id="syncPanel"></div>
+
+<div class="daily-bar" id="dailyBar"></div>
 
 <div class="flow" id="flowRail" hidden></div>
 
@@ -1141,6 +1156,7 @@ let state = {
   review: {},  // cardKey -> true
   ts: {},      // cardKey -> 最後に印を付けた時刻（端末間同期のマージに使う）
   resetAt: 0,  // リセットした時刻。これより古い印は同期時に捨てる
+  daily: {},   // 📌今日の5フレーズの記録。cardKey -> { ok: 言えた日, ng: 言えなかった日, ts }
 };
 
 function cardKey(c) { return c.cat + "::" + c.jp; }
@@ -1151,6 +1167,7 @@ function loadState() {
     if (saved) {
       state.known = saved.known || {}; state.review = saved.review || {};
       state.ts = saved.ts || {}; state.resetAt = saved.resetAt || 0;
+      state.daily = saved.daily || {};
       // 同期を入れる前に付けた印には時刻が無い。1回だけ現在時刻を入れて土俵に載せる。
       for (const k of [...Object.keys(state.known), ...Object.keys(state.review)]) {
         if (!state.ts[k]) state.ts[k] = Date.now();
@@ -1159,7 +1176,7 @@ function loadState() {
   } catch (e) {}
 }
 function saveState() {
-  store.set(LS_KEY, JSON.stringify({ known: state.known, review: state.review, ts: state.ts, resetAt: state.resetAt }));
+  store.set(LS_KEY, JSON.stringify({ known: state.known, review: state.review, ts: state.ts, resetAt: state.resetAt, daily: state.daily }));
 }
 
 // ============ 端末間同期（GitHubの非公開Gist） ============
@@ -1182,13 +1199,14 @@ async function gh(path, opts = {}) {
   return res.status === 204 ? null : res.json();
 }
 function syncDoc() {
-  return { v: 1, resetAt: state.resetAt || 0, known: state.known, review: state.review, ts: state.ts };
+  return { v: 1, resetAt: state.resetAt || 0, known: state.known, review: state.review, ts: state.ts, daily: state.daily };
 }
 // カード単位で「印を付けた時刻が新しい方」を採用する。
 // 同じカードを両方の端末で触っても、あとから触った方が残る。
 function mergeRemote(R) {
-  if (!R || (!R.known && !R.review)) return;
+  if (!R || (!R.known && !R.review && !R.daily)) return;
   const resetAt = Math.max(state.resetAt || 0, R.resetAt || 0);
+  state.daily = mergeDaily(state.daily, R.daily, resetAt);
   const mine = { known: state.known, review: state.review, ts: state.ts };
   const theirs = { known: R.known || {}, review: R.review || {}, ts: R.ts || {} };
   const known = {}, review = {}, ts = {};
@@ -1202,6 +1220,17 @@ function mergeRemote(R) {
     ts[k] = t;
   }
   state.known = known; state.review = review; state.ts = ts; state.resetAt = resetAt;
+}
+// 今日の5フレーズの記録もカード単位で新しい方を採用する（リセットより前は捨てる）
+function mergeDaily(mine, theirs, resetAt) {
+  mine = mine || {}; theirs = theirs || {};
+  const out = {};
+  for (const k of new Set([...Object.keys(mine), ...Object.keys(theirs)])) {
+    const m = mine[k], t = theirs[k];
+    const win = !m ? t : !t ? m : ((t.ts || 0) > (m.ts || 0) ? t : m);
+    if (win && (win.ts || 0) >= (resetAt || 0)) out[k] = win;
+  }
+  return out;
 }
 async function syncNow() {
   if (!SY.token) return;
@@ -1245,8 +1274,63 @@ function syncText() {
   return "☁️ 同期待ち";
 }
 
+// ============ 📌 今日の5フレーズ ============
+// ⭐最優先（ルール・禁止句カードを除く）を優先度の順に毎日5つ出す。
+// その日に「✓言えた」にならなかったもの（✗・未着手）は翌日も残り、空いた枠だけ次のフレーズで埋める。
+// 全部言えたら、言えた日が古いものから復習として戻ってくる。
+const DAILY_N = 5, DAILY_CAT = "⭐最優先";
+function localDate(d = new Date()) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function dailyPool() {
+  return CARDS.map((c, i) => i).filter(i => CARDS[i].cat === DAILY_CAT && !/^\(/.test(CARDS[i].en));
+}
+// その日の5つ（CARDSの添字）。記録だけから決まるので、端末が違っても同じ5つになる（純粋関数）
+function dailyPick(daily, today) {
+  const rec = (i) => (daily || {})[cardKey(CARDS[i])] || {};
+  const pool = dailyPool();
+  const learned = (i) => rec(i).ok && rec(i).ok < today;   // 前日までに言えた
+  const fresh = pool.filter(i => !learned(i));               // 未習得・今日言えたもの（優先度の順）
+  const old = pool.filter(learned).sort((a, b) => rec(a).ok < rec(b).ok ? -1 : rec(a).ok > rec(b).ok ? 1 : a - b);
+  return fresh.concat(old).slice(0, DAILY_N);
+}
+// 前の日に✗だったもの＝持ち越し（純粋関数）
+function dailyCarried(r, today) { return !!(r && r.ng && r.ng < today && !(r.ok && r.ok >= r.ng)); }
+function dailyStatus(daily, today) {
+  const picks = dailyPick(daily, today);
+  const rec = (i) => (daily || {})[cardKey(CARDS[i])] || {};
+  return {
+    picks,
+    done: picks.filter(i => rec(i).ok === today).length,
+    carried: picks.filter(i => dailyCarried(rec(i), today)).length,
+  };
+}
+// 今日の5つに入っているカードに印を付けたら、どのモードからでも記録する
+function recordDaily(c, ok) {
+  const today = localDate();
+  if (!dailyPick(state.daily, today).some(i => CARDS[i] === c)) return;
+  const k = cardKey(c), prev = state.daily[k] || {};
+  state.daily[k] = ok ? { ok: today, ng: prev.ng || "", ts: Date.now() } : { ok: "", ng: today, ts: Date.now() };
+}
+let dailyDay = localDate();
+function renderDailyBar() {
+  const bar = document.getElementById("dailyBar");
+  const st = dailyStatus(state.daily, localDate());
+  const all = st.done >= st.picks.length;
+  bar.className = "daily-bar" + (all ? " done" : "");
+  bar.innerHTML = `<b>📌 今日の5フレーズ</b><span>${all ? "🎉 完了" : "✓ " + st.done + " / " + st.picks.length}</span>` +
+    (st.carried ? `<span class="sub">うち前回✗の持ち越し ${st.carried}</span>` : "") +
+    (state.category === "daily" ? "" : `<button class="btn" id="dailyGo">${all ? "見直す" : "始める"}</button>`);
+  const go = document.getElementById("dailyGo");
+  if (go) go.addEventListener("click", () => { stopScript(); applySelection("daily"); store.set("oet_last_cat", "daily"); rebuildOrder(); render(); });
+}
+
 function filteredCards() {
   let cards = CARDS.map((c, i) => ({ ...c, _i: i }));
+  if (state.category === "daily") {
+    const picks = dailyPick(state.daily, localDate());
+    return picks.map(i => cards[i]);
+  }
   if (state.category !== "all") cards = cards.filter(c => c.cat === state.category);
   if (state.reviewMode) cards = cards.filter(c => state.review[cardKey(c)]);
   return cards;
@@ -1477,7 +1561,8 @@ function renderRP(rp) {
 function render() {
   const rp = currentRP();
   document.getElementById("shuffleBtn").disabled = !!rp;
-  document.getElementById("reviewModeBtn").disabled = !!rp;
+  document.getElementById("reviewModeBtn").disabled = !!rp || state.category === "daily";
+  renderDailyBar();
   if (rp) { renderRP(rp); return; }
   renderFlow(null);
   const area = document.getElementById("cardArea");
@@ -1505,12 +1590,16 @@ function render() {
   // 長い文は中央揃えだと行頭がばらついて読みにくいので左揃えに切り替える
   const frontAlign = card.jp.length > 45 ? " align-left" : "";
   const backAlign = (card.en.length > 90 || card.note) ? " align-left" : "";
+  const inDaily = state.category === "daily";
+  const drec = state.daily[cardKey(card)];
+  const dtag = !inDaily ? "" : drec && drec.ok === localDate() ? `<span class="carry-tag" style="background:#dcfce7;color:#166534">✓ 今日言えた</span>`
+    : dailyCarried(drec, localDate()) ? `<span class="carry-tag">🔁 前回✗の持ち越し</span>` : "";
   area.innerHTML = `
     <div class="card ${state.flipped ? "flipped" : ""}" id="theCard">
       <div class="card-face card-front${frontAlign}">
-        <span class="category-tag">${card.cat}</span>
+        <span class="category-tag">${inDaily ? "📌 今日の5フレーズ" : card.cat}</span>
         <span class="face-label">日本語 → 英語で言ってみよう</span>
-        <p class="jp-text">${jp}</p>
+        ${dtag}<p class="jp-text">${jp}</p>
         <p class="hint">クリック or Space で答えを表示</p>
       </div>
       <div class="card-face card-back${backAlign}">
@@ -1550,6 +1639,7 @@ function markKnown() {
   state.known[k] = true;
   delete state.review[k];
   state.ts[k] = Date.now();
+  recordDaily(c, true);
   saveState(); syncSoon();
   next(); render();
 }
@@ -1559,6 +1649,7 @@ function markReview() {
   state.review[k] = true;
   delete state.known[k];
   state.ts[k] = Date.now();
+  recordDaily(c, false);
   saveState(); syncSoon();
   next(); render();
 }
@@ -1588,6 +1679,7 @@ document.getElementById("voiceSelect").addEventListener("change", (e) => {
 const select = document.getElementById("categorySelect");
 const cats = [...new Set(CARDS.map(c => c.cat))];
 select.innerHTML =
+  `<optgroup label="📌 毎日"><option value="daily">📌 今日の5フレーズ</option></optgroup>` +
   `<optgroup label="フレーズ（カテゴリ別）"><option value="all">すべてのカテゴリ (${CARDS.length})</option>` +
   cats.map(c => `<option value="${c}">${c} (${CARDS.filter(x => x.cat === c).length})</option>`).join("") +
   `</optgroup><optgroup label="🎭 ロールプレイ（カード→流れの順）">` +
@@ -1596,10 +1688,11 @@ select.innerHTML =
 // 選んだカテゴリ／ロールプレイを次回も開く
 function applySelection(v) {
   if (v.startsWith("rp:") && ROLEPLAYS.some(r => r.id === v.slice(3))) { state.rp = v.slice(3); state.category = "all"; }
-  else { state.rp = null; state.category = (v === "all" || cats.includes(v)) ? v : "all"; }
+  else { state.rp = null; state.category = (v === "all" || v === "daily" || cats.includes(v)) ? v : "all"; }
   select.value = state.rp ? "rp:" + state.rp : state.category;
 }
-applySelection(store.get("oet_last_cat") || "all");
+// 初めて開いたときと、#daily 付きのリンク（デイリーホームから）で開いたときは今日の5フレーズ
+applySelection(location.hash === "#daily" ? "daily" : (store.get("oet_last_cat") || "daily"));
 select.addEventListener("change", () => {
   stopScript(); applySelection(select.value); store.set("oet_last_cat", select.value); rebuildOrder(); render();
 });
@@ -1611,7 +1704,7 @@ document.getElementById("reviewModeBtn").addEventListener("click", (e) => {
 });
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (confirm("学習進捗（✓・要復習）をリセットしますか？" + (SY.token ? "\n同期している他の端末からも消えます。" : ""))) {
-    state.known = {}; state.review = {}; state.ts = {}; state.resetAt = Date.now();
+    state.known = {}; state.review = {}; state.ts = {}; state.daily = {}; state.resetAt = Date.now();
     saveState(); render(); syncNow();
   }
 });
@@ -1655,7 +1748,12 @@ document.getElementById("syncBtn").addEventListener("click", () => {
 });
 renderSync();
 syncNow();
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncNow(); });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  // 日付が変わってから開き直したら、今日の5つを選び直す
+  if (localDate() !== dailyDay) { dailyDay = localDate(); if (state.category === "daily" && !currentRP()) { rebuildOrder(); render(); } }
+  syncNow();
+});
 window.addEventListener("online", syncNow);
 
 document.getElementById("nextBtn").addEventListener("click", next);
