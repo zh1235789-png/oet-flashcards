@@ -77,3 +77,19 @@ test('下のタブ: 開いたものからタブが決まり、フレーズとロ
   assert.equal(a.$('tab'), 'settings');
   assert.equal(a.$('state.category'), 'daily', '設定タブで学習中の状態が変わった');
 });
+
+test('下のタブ: 次に開いたときは最後に開いていたタブ・カードで始まる', () => {
+  const a = assertLoads({ storage: { oet_last_cat: 'rp:14' } });
+  a.openTab('phrases'); a.openTab('rp');
+  const saved = norm(a.$('JSON.parse(JSON.stringify(Object.fromEntries(["oet_last_cat","oet_last_phrase","oet_last_rp"].map(k => [k, store.get(k)]))))'));
+  const b = assertLoads({ storage: saved });
+  assert.equal(b.$('tab'), 'rp');
+  assert.equal(b.$('state.rp'), '14');
+  b.openTab('phrases');
+  assert.equal(b.$('state.category'), 'all');
+  b.openTab('today');
+  const c = assertLoads({ storage: norm(b.$('Object.fromEntries(["oet_last_cat","oet_last_phrase","oet_last_rp"].map(k => [k, store.get(k)]))')) });
+  assert.equal(c.$('tab'), 'today');
+  c.openTab('rp');
+  assert.equal(c.$('state.rp'), '14', 'ロールプレイの続きが消えた');
+});

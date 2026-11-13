@@ -1641,6 +1641,7 @@ function render() {
   document.getElementById("reviewModeBtn").disabled = !!rp || state.category === "daily";
   renderDailyBar();
   renderOverall();
+  renderSettingsStats();
   if (rp) { renderRP(rp); return; }
   renderFlow(null);
   const area = document.getElementById("cardArea");
