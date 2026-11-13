@@ -34,14 +34,44 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    padding: calc(16px + env(safe-area-inset-top)) 16px calc(84px + env(safe-area-inset-bottom));
   }
+  [hidden] { display: none !important; }
+  .view { width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex;
+    background: rgba(255,255,255,0.94); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid #cbd5e1; padding: 4px 8px calc(env(safe-area-inset-bottom) + 4px);
+  }
+  .tabbar button {
+    flex: 1; background: none; border: none; padding: 6px 0 4px; color: var(--text-sub);
+    font-size: 11px; font-weight: 600; font-family: inherit; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .tabbar button .ic { font-size: 20px; line-height: 1; }
+  .tabbar button.on { color: var(--primary); }
+  .overall { width: 100%; max-width: 640px; margin-bottom: 12px; padding: 12px 14px; border-radius: 12px;
+    background: var(--card-bg); border: 1px solid #cbd5e1; font-size: 0.85rem; }
+  .overall .row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .overall .big { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+  .overall .sub { color: var(--text-sub); font-size: 0.78rem; }
+  .overall .meter { height: 10px; border-radius: 99px; background: #e2e8f0; overflow: hidden; margin: 8px 0 6px; display: flex; }
+  .overall .meter i { display: block; height: 100%; }
+  .overall .meter .m-ok { background: var(--green); }
+  .overall .meter .m-ng { background: #fca5a5; }
+  .settings { width: 100%; max-width: 640px; }
+  .set-card { background: var(--card-bg); border: 1px solid #cbd5e1; border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 12px; font-size: 0.85rem; }
+  .set-card h2 { font-size: 0.95rem; color: var(--primary); margin-bottom: 10px; }
+  .set-card .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .set-card label { color: var(--text-sub); min-width: 5em; }
+  .set-card .sync-panel { display: block; border: none; padding: 0; margin: 0; }
   header {
     text-align: center;
     margin-bottom: 16px;
   }
   header h1 {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     color: var(--primary);
   }
   header p {
@@ -336,49 +366,68 @@
 </head>
 <body>
 <header>
-  <h1>🩺 OET Speaking フラッシュカード <span style="font-size:0.8rem;color:var(--text-sub)"></span></h1>
-  <p>和文を見て英語で言ってみる → カードをタップして答え合わせ<br>🎭 カテゴリ選択の下の「ロールプレイ」で、カード→会話の流れの順に練習</p>
+  <h1>🩺 OET Speaking フラッシュカード</h1>
+  <p id="tabHint">和文を見て英語で言ってみる → カードをタップして答え合わせ</p>
 </header>
 
-<div class="controls">
-  <select id="categorySelect" aria-label="カテゴリ選択"></select>
-  <button class="btn" id="shuffleBtn">🔀 シャッフル</button>
-  <button class="btn" id="reviewModeBtn">⭐ 要復習のみ</button>
-  <button class="btn" id="resetBtn">↺ 進捗リセット</button>
-  <button class="btn" id="syncBtn">☁️ 同期</button>
-  <select id="voiceSelect" aria-label="音声選択" title="読み上げ音声"></select>
-  <select id="rateSelect" aria-label="読み上げ速度" title="読み上げ速度">
-    <option value="0.7">🐢 ゆっくり</option>
-    <option value="0.9" selected>標準</option>
-    <option value="1.0">ネイティブ速度</option>
-  </select>
-</div>
+<div class="view" id="studyView">
+  <div class="overall" id="overallBox"></div>
+  <div class="daily-bar" id="dailyBar"></div>
 
-<div class="sync-panel" id="syncPanel"></div>
+  <div class="controls" id="studyControls">
+    <select id="categorySelect" aria-label="カテゴリ選択"></select>
+    <button class="btn" id="shuffleBtn">🔀 シャッフル</button>
+    <button class="btn" id="reviewModeBtn">⭐ 要復習のみ</button>
+  </div>
 
-<div class="daily-bar" id="dailyBar"></div>
+  <div class="flow" id="flowRail" hidden></div>
 
-<div class="flow" id="flowRail" hidden></div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text">
+      <span id="cardCounter">0 / 0</span>
+      <span id="statsText"></span>
+    </div>
+  </div>
 
-<div class="progress-wrap">
-  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-  <div class="progress-text">
-    <span id="cardCounter">0 / 0</span>
-    <span id="statsText"></span>
+  <div class="card-area" id="cardArea"></div>
+
+  <div class="nav">
+    <button class="btn" id="prevBtn">← 前へ</button>
+    <button class="btn btn-dontknow" id="dontKnowBtn">✗ 要復習</button>
+    <button class="btn btn-know" id="knowBtn">✓ 言えた</button>
+    <button class="btn" id="nextBtn">次へ →</button>
   </div>
 </div>
 
-<div class="card-area" id="cardArea"></div>
-
-<div class="nav">
-  <button class="btn" id="prevBtn">← 前へ</button>
-  <button class="btn btn-dontknow" id="dontKnowBtn">✗ 要復習</button>
-  <button class="btn btn-know" id="knowBtn">✓ 言えた</button>
-  <button class="btn" id="nextBtn">次へ →</button>
+<div class="view settings" id="settingsView" hidden>
+  <div class="set-card">
+    <h2>🔊 読み上げ</h2>
+    <div class="row"><label for="voiceSelect">音声</label><select id="voiceSelect" aria-label="音声選択" title="読み上げ音声"></select></div>
+    <div class="row" style="margin-top:8px"><label for="rateSelect">速度</label>
+      <select id="rateSelect" aria-label="読み上げ速度" title="読み上げ速度">
+        <option value="0.7">🐢 ゆっくり</option>
+        <option value="0.9" selected>標準</option>
+        <option value="1.0">ネイティブ速度</option>
+      </select></div>
+  </div>
+  <div class="set-card"><div class="sync-panel open" id="syncPanel"></div></div>
+  <div class="set-card">
+    <h2>📊 記録</h2>
+    <p id="settingsStats" class="stats" style="margin:0 0 10px"></p>
+    <div class="row"><button class="btn" id="resetBtn">↺ 進捗リセット</button></div>
+  </div>
+  <p class="stats">
+    キー操作: <kbd>Space</kbd> めくる / <kbd>←</kbd><kbd>→</kbd> 移動 / <kbd>1</kbd> 要復習 / <kbd>2</kbd> 言えた / <kbd>S</kbd> 読み上げ
+  </p>
 </div>
-<p class="stats" style="margin-top:16px">
-  キー操作: <kbd>Space</kbd> めくる / <kbd>←</kbd><kbd>→</kbd> 移動 / <kbd>1</kbd> 要復習 / <kbd>2</kbd> 言えた / <kbd>S</kbd> 読み上げ
-</p>
+
+<nav class="tabbar" id="tabbar">
+  <button data-tab="today"><span class="ic">📌</span>今日</button>
+  <button data-tab="phrases"><span class="ic">🗂</span>フレーズ</button>
+  <button data-tab="rp"><span class="ic">🎭</span>ロールプレイ</button>
+  <button data-tab="settings"><span class="ic">⚙️</span>設定</button>
+</nav>
 
 <script>
 const CARDS = [
@@ -1311,6 +1360,28 @@ function dailyStatus(daily, today) {
     carried: picks.filter(i => dailyCarried(rec(i), today)).length,
   };
 }
+// ⭐最優先の全体の暗記進捗（純粋関数）。最後の印が✓＝暗記済み、✗＝まだ言えない、記録なし＝未着手
+function dailyOverall(daily, today) {
+  const pool = dailyPool();
+  const rec = (i) => (daily || {})[cardKey(CARDS[i])] || {};
+  const learned = pool.filter(i => rec(i).ok).length;
+  const ng = pool.filter(i => !rec(i).ok && rec(i).ng).length;
+  const total = pool.length, remaining = total - learned;
+  // 今日まだ言えていない今日の5つ以外に、明日以降に回るぶん（毎日5つで最短何日か）
+  const leftToday = dailyStatus(daily, today).picks.filter(i => !rec(i).ok).length;
+  const days = Math.ceil(Math.max(0, remaining - leftToday) / DAILY_N) + (leftToday ? 1 : 0);
+  return { total, learned, ng, untouched: total - learned - ng, remaining, pct: total ? Math.round(learned / total * 100) : 0, days };
+}
+function renderOverall() {
+  const box = document.getElementById("overallBox");
+  const o = dailyOverall(state.daily, localDate());
+  const w = (n) => o.total ? (n / o.total * 100).toFixed(1) + "%" : "0%";
+  box.innerHTML = `<div class="row"><b>📚 ⭐最優先フレーズの暗記</b><span class="sub" style="margin-left:auto">${o.pct}%</span></div>
+    <div class="meter" role="img" aria-label="暗記済み ${o.learned} / ${o.total}"><i class="m-ok" style="width:${w(o.learned)}"></i><i class="m-ng" style="width:${w(o.ng)}"></i></div>
+    <div class="row"><span class="big">${o.learned}</span><span>/ ${o.total} 暗記済み</span>
+      <span class="sub">✗まだ ${o.ng}・未着手 ${o.untouched}</span></div>
+    <div class="sub" style="margin-top:4px">${o.remaining ? `残り ${o.remaining}。毎日5つ全部言えれば、最短あと ${o.days} 日で一周` : "🎉 全部暗記済み。これからは言えた日が古い順に復習が出ます"}</div>`;
+}
 // 今日の5つに入っているカードに印を付けたら、どのモードからでも記録する
 function recordDaily(c, ok) {
   const today = localDate();
@@ -1328,7 +1399,7 @@ function renderDailyBar() {
     (st.carried ? `<span class="sub">うち前回✗の持ち越し ${st.carried}</span>` : "") +
     (state.category === "daily" ? "" : `<button class="btn" id="dailyGo">${all ? "見直す" : "始める"}</button>`);
   const go = document.getElementById("dailyGo");
-  if (go) go.addEventListener("click", () => { stopScript(); applySelection("daily"); store.set("oet_last_cat", "daily"); rebuildOrder(); render(); });
+  if (go) go.addEventListener("click", () => openTab("today"));
 }
 
 function filteredCards() {
@@ -1569,6 +1640,7 @@ function render() {
   document.getElementById("shuffleBtn").disabled = !!rp;
   document.getElementById("reviewModeBtn").disabled = !!rp || state.category === "daily";
   renderDailyBar();
+  renderOverall();
   if (rp) { renderRP(rp); return; }
   renderFlow(null);
   const area = document.getElementById("cardArea");
@@ -1684,23 +1756,60 @@ document.getElementById("voiceSelect").addEventListener("change", (e) => {
 
 const select = document.getElementById("categorySelect");
 const cats = [...new Set(CARDS.map(c => c.cat))];
-select.innerHTML =
-  `<optgroup label="📌 毎日"><option value="daily">📌 今日の5フレーズ</option></optgroup>` +
-  `<optgroup label="フレーズ（カテゴリ別）"><option value="all">すべてのカテゴリ (${CARDS.length})</option>` +
-  cats.map(c => `<option value="${c}">${c} (${CARDS.filter(x => x.cat === c).length})</option>`).join("") +
-  `</optgroup><optgroup label="🎭 ロールプレイ（カード→流れの順）">` +
-  ROLEPLAYS.map(r => `<option value="rp:${r.id}">🎭 Card${r.id} ${r.title}</option>`).join("") + `</optgroup>`;
+const PHRASE_OPTS = `<option value="all">すべてのカテゴリ (${CARDS.length})</option>` +
+  cats.map(c => `<option value="${c}">${c} (${CARDS.filter(x => x.cat === c).length})</option>`).join("");
+const RP_OPTS = ROLEPLAYS.map(r => `<option value="rp:${r.id}">🎭 Card${r.id} ${r.title}</option>`).join("");
+
+// ---- 下のタブ：📌今日／🗂フレーズ／🎭ロールプレイ／⚙️設定 ----
+// フレーズとロールプレイは、それぞれ最後に開いたものを覚えておく
+let tab = "today";
+function tabOf(v) { return v === "daily" ? "today" : String(v).startsWith("rp:") ? "rp" : "phrases"; }
+function showTab(t) {
+  tab = t;
+  document.querySelectorAll("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  document.getElementById("studyView").hidden = t === "settings";
+  document.getElementById("settingsView").hidden = t !== "settings";
+  document.getElementById("overallBox").hidden = t !== "today";
+  document.getElementById("dailyBar").hidden = t !== "today";
+  document.getElementById("studyControls").hidden = t === "today";
+  document.getElementById("shuffleBtn").hidden = t !== "phrases";
+  document.getElementById("reviewModeBtn").hidden = t !== "phrases";
+  if (t === "phrases" || t === "rp") select.innerHTML = t === "rp" ? RP_OPTS : PHRASE_OPTS;
+  document.getElementById("tabHint").textContent =
+    t === "today" ? "⭐最優先から毎日5つ。言えなかったものは翌日も出ます"
+    : t === "rp" ? "カードを選んで、カード→会話の流れの順に練習"
+    : t === "settings" ? "読み上げ・同期・記録"
+    : "和文を見て英語で言ってみる → カードをタップして答え合わせ";
+}
 
 // 選んだカテゴリ／ロールプレイを次回も開く
 function applySelection(v) {
   if (v.startsWith("rp:") && ROLEPLAYS.some(r => r.id === v.slice(3))) { state.rp = v.slice(3); state.category = "all"; }
   else { state.rp = null; state.category = (v === "all" || v === "daily" || cats.includes(v)) ? v : "all"; }
-  select.value = state.rp ? "rp:" + state.rp : state.category;
+  const cur = state.rp ? "rp:" + state.rp : state.category;
+  showTab(tabOf(cur));
+  select.value = cur;
+  store.set("oet_last_cat", cur);
+  if (tab === "phrases") store.set("oet_last_phrase", cur);
+  if (tab === "rp") store.set("oet_last_rp", cur);
+}
+function openTab(t) {
+  stopScript();
+  if (t === "settings") { showTab("settings"); renderSync(); renderSettingsStats(); window.scrollTo(0, 0); return; }
+  const v = t === "today" ? "daily"
+    : t === "rp" ? (store.get("oet_last_rp") || "rp:" + ROLEPLAYS[0].id)
+    : (store.get("oet_last_phrase") || "all");
+  applySelection(v); rebuildOrder(); render(); window.scrollTo(0, 0);
+}
+document.querySelectorAll("#tabbar button").forEach(b => b.addEventListener("click", () => openTab(b.dataset.tab)));
+function renderSettingsStats() {
+  const el = document.getElementById("settingsStats");
+  if (el) el.innerHTML = `<span class="known">✓ 言えた ${Object.keys(state.known).length}</span>　<span class="review">⭐ 要復習 ${Object.keys(state.review).length}</span>　（全 ${CARDS.length} 枚）`;
 }
 // 初めて開いたときと、#daily 付きのリンク（デイリーホームから）で開いたときは今日の5フレーズ
 applySelection(location.hash === "#daily" ? "daily" : (store.get("oet_last_cat") || "daily"));
 select.addEventListener("change", () => {
-  stopScript(); applySelection(select.value); store.set("oet_last_cat", select.value); rebuildOrder(); render();
+  stopScript(); applySelection(select.value); rebuildOrder(); render();
 });
 document.getElementById("shuffleBtn").addEventListener("click", () => { rebuildOrder(true); render(); });
 document.getElementById("reviewModeBtn").addEventListener("click", (e) => {
@@ -1711,7 +1820,7 @@ document.getElementById("reviewModeBtn").addEventListener("click", (e) => {
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (confirm("学習進捗（✓・要復習）をリセットしますか？" + (SY.token ? "\n同期している他の端末からも消えます。" : ""))) {
     state.known = {}; state.review = {}; state.ts = {}; state.daily = {}; state.resetAt = Date.now();
-    saveState(); render(); syncNow();
+    saveState(); render(); renderSettingsStats(); syncNow();
   }
 });
 function renderSync() {
@@ -1747,11 +1856,6 @@ function renderSync() {
     if (confirm("この端末の同期を解除します（進捗はこの端末に残ります）")) { SY = {}; saveSY(); renderSync(); }
   });
 }
-document.getElementById("syncBtn").addEventListener("click", () => {
-  const panel = document.getElementById("syncPanel");
-  panel.classList.toggle("open");
-  if (panel.classList.contains("open")) renderSync();
-});
 renderSync();
 syncNow();
 document.addEventListener("visibilitychange", () => {

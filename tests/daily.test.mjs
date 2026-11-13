@@ -94,3 +94,35 @@ test('初回は今日の5フレーズで開く・保存した記録を読み戻�
   assert.equal(b.$('state.category'), 'all');
   assert.equal(norm(b.$('state.daily'))['q::w'].ok, '2026-11-10');
 });
+
+test('全体の暗記進捗: 最後の印が✓だけ暗記済み、✗と未着手を分けて数える', () => {
+  const a = at('2026-11-13');
+  const cards = a.$('CARDS');
+  const p = pool(a);
+  const daily = {
+    [a.cardKey(cards[p[0]])]: { ok: '2026-11-11', ng: '', ts: 1 },
+    [a.cardKey(cards[p[1]])]: { ok: '2026-11-13', ng: '2026-11-12', ts: 2 },
+    [a.cardKey(cards[p[2]])]: { ok: '', ng: '2026-11-12', ts: 3 },
+  };
+  const o = norm(a.dailyOverall(daily, '2026-11-13'));
+  assert.equal(o.total, p.length);
+  assert.equal(o.learned, 2);
+  assert.equal(o.ng, 1);
+  assert.equal(o.untouched, p.length - 3);
+  assert.equal(o.remaining, p.length - 2);
+  assert.equal(o.pct, Math.round(2 / p.length * 100));
+  // 毎日5つで最短何日か（今日の分を1日と数える）
+  assert.equal(o.days, Math.ceil((p.length - 2) / 5));
+});
+
+test('全体の暗記進捗: 記録なしは0%、全部言えたら残り0', () => {
+  const a = at('2026-11-13');
+  const cards = a.$('CARDS');
+  assert.equal(norm(a.dailyOverall({}, '2026-11-13')).learned, 0);
+  const all = {};
+  pool(a).forEach((i, n) => { all[a.cardKey(cards[i])] = { ok: '2026-11-10', ng: '', ts: n }; });
+  const o = norm(a.dailyOverall(all, '2026-11-13'));
+  assert.equal(o.remaining, 0);
+  assert.equal(o.days, 0);
+  assert.equal(o.pct, 100);
+});

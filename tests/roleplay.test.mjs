@@ -60,3 +60,20 @@ test('前回ロールプレイを選んでいても起動できる', () => {
   const b = assertLoads({ storage: { oet_last_cat: 'rp:99' } });   // 存在しない番号は通常モードへ
   assert.equal(b.$('state.rp'), null);
 });
+
+test('下のタブ: 開いたものからタブが決まり、フレーズとロールプレイは最後のものを覚える', () => {
+  const a = assertLoads({ storage: { oet_last_cat: 'rp:14' } });
+  assert.equal(a.$('tab'), 'rp');
+  assert.equal(a.tabOf('daily'), 'today');
+  assert.equal(a.tabOf('all'), 'phrases');
+  a.openTab('phrases');
+  assert.equal(a.$('tab'), 'phrases');
+  assert.equal(a.$('state.rp'), null);
+  a.openTab('rp');
+  assert.equal(a.$('state.rp'), '14', '最後に開いたロールプレイに戻らない');
+  a.openTab('today');
+  assert.equal(a.$('state.category'), 'daily');
+  a.openTab('settings');
+  assert.equal(a.$('tab'), 'settings');
+  assert.equal(a.$('state.category'), 'daily', '設定タブで学習中の状態が変わった');
+});
